@@ -1,0 +1,26 @@
+{
+"com.badlogic.gdx.graphics.g2d.BitmapFont": {
+	"choose_list_font": {
+		"file": "font.fnt",
+		"scaledSize": -1,
+		"markupEnabled": false,
+		"flip": false
+	}
+},
+"com.badlogic.gdx.graphics.Color": {
+	"choose_list_color_unselected": {
+		"r": 0,
+		"g": 0,
+		"b": 0,
+		"a": 1
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle": {
+	"default": {
+		"font": "choose_list_font",
+		"fontColorSelected": "choose_list_color_unselected",
+		"fontColorUnselected": "choose_list_color_unselected",
+		"selection": "selection"
+	}
+}
+}

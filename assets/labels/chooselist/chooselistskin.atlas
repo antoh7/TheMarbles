@@ -1,0 +1,20 @@
+
+chooselistskin.png
+size: 1024, 1024
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+font
+  rotate: false
+  xy: 1, 1
+  size: 512, 512
+  orig: 512, 512
+  offset: 0, 0
+  index: -1
+selection
+  rotate: false
+  xy: 1, 515
+  size: 862, 360
+  orig: 862, 360
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,54 @@
+{
+"com.badlogic.gdx.graphics.g2d.BitmapFont": {
+	"cancel_button_font": {
+		"file": "font.fnt",
+		"scaledSize": -1,
+		"markupEnabled": false,
+		"flip": false
+	}
+},
+"com.badlogic.gdx.graphics.Color": {
+	"cancel_button_background_color": {
+		"r": 1,
+		"g": 0.2627451,
+		"b": 0.2627451,
+		"a": 1
+	},
+	"cancel_button_background_color_down": {
+		"r": 1,
+		"g": 0,
+		"b": 0,
+		"a": 1
+	},
+	"cancel_button_font_color": {
+		"r": 0.17254902,
+		"g": 0.17254902,
+		"b": 0.17254902,
+		"a": 1
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable": {
+	"cancel_button_background": {
+		"name": "white-pixel",
+		"color": "cancel_button_background_color",
+		"minWidth": 150,
+		"minHeight": 50
+	},
+	"cancel_button_background_down": {
+		"name": "white-pixel",
+		"color": "cancel_button_background_color_down",
+		"minWidth": 150,
+		"minHeight": 50
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle": {
+	"default": {
+		"font": "cancel_button_font",
+		"fontColor": "cancel_button_font_color",
+		"up": "cancel_button_background",
+		"down": "cancel_button_background_down",
+		"pressedOffsetX": 2,
+		"pressedOffsetY": 3
+	}
+}
+}
