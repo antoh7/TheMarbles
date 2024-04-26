@@ -178,14 +178,14 @@ public class GameLogic implements Screen {
                     Player p = currPacket.getPlayerData();
                     synchronized (this) {
 
-                        game_state = currPacket.getGameState();
-                        ourTurn = currPacket.getTurnOrder();
-                        opponentReady = currPacket.getPlayerReady();
-
                         opponent.setBet(p.getBet());
                         opponent.setMarblesAmount(p.getMarblesAmount());
                         opponent.setStatement(p.getStatement());
                         opponent.setPlayerHandOpened(opHandInstances[p.getMarblesAmount()]);
+
+                        game_state = currPacket.getGameState();
+                        ourTurn = currPacket.getTurnOrder();
+                        opponentReady = currPacket.getPlayerReady();
                         System.out.println("*********RECEIVED*********");
                         System.out.println("statement: " + p.getStatement());
                         System.out.println("bet: " + p.getBet());
@@ -229,10 +229,10 @@ public class GameLogic implements Screen {
                     wait(SECONDS, 3);
 
                     if (ourTurn){
-                        if (opponent.getStatement().equals(EVEN) && betW % 2 == 0){
+                        if (opponent.getStatement().equals(EVEN) && isEven(betW)){
                             opponent.setMarblesAmount(maO + betW);
                             we.setMarblesAmount(maW - betO);
-                        } else if (opponent.getStatement().equals(ODD) && betW % 2 != 0) {
+                        } else if (opponent.getStatement().equals(ODD) && isOdd(betW)) {
                             opponent.setMarblesAmount(maO + betW);
                             we.setMarblesAmount(maW - betO);
                         }else{
@@ -241,10 +241,10 @@ public class GameLogic implements Screen {
                         }
                     }
                     if (!ourTurn){
-                        if (we.getStatement().equals(EVEN) && betO % 2 == 0){
+                        if (we.getStatement().equals(EVEN) && isEven(betO)){
                             we.setMarblesAmount(maW + betO);
                             opponent.setMarblesAmount(maO - betW);
-                        } else if (we.getStatement().equals(ODD) && betO % 2 != 0) {
+                        } else if (we.getStatement().equals(ODD) && isOdd(betO)) {
                             we.setMarblesAmount(maW + betO);
                             opponent.setMarblesAmount(maO - betW);
                         }else {
@@ -253,7 +253,11 @@ public class GameLogic implements Screen {
                         }
                     }
                     we.setPlayerHandOpened(ouHandInstances[we.getMarblesAmount()]);
-                    commitUpdate(receiver, new DataPacket(game_state, !ourTurn, weReady, we));
+
+                    if(entryPoint.playerState.equals(CLIENT)) {
+                        commitUpdate(receiver, new DataPacket(game_state, !ourTurn, weReady, we));
+                    }
+
                     System.out.println("*********COMMITTED (from: stageEnded) *********");
                     System.out.println("statement: " + we.getStatement());
                     System.out.println("bet: " + we.getBet());
@@ -314,7 +318,6 @@ public class GameLogic implements Screen {
 
     private void commitUpdate(Receiver receiver, DataPacket packet){
         receiver.send_data(packet);
-        System.out.println("");
     }
 
     private void reset(){
@@ -375,15 +378,15 @@ public class GameLogic implements Screen {
                 chooseBet.setVisible(false);
                 chooseBet.setTouchable(disabled);
 
-                System.out.println("********* COMMITTED (from: chooseBet) *********");
-                System.out.println("statement: " + we.getStatement());
-                System.out.println("bet: " + we.getBet());
-                System.out.println("marbles amount: " + we.getMarblesAmount());
-                System.out.println("*****************************");
 
                 if (ourTurn) {
                     commitUpdate(receiver, new DataPacket(game_state, !ourTurn,
                             weReady, we));
+                    System.out.println("********* COMMITTED (from: chooseBet) *********");
+                    System.out.println("statement: " + we.getStatement());
+                    System.out.println("bet: " + we.getBet());
+                    System.out.println("marbles amount: " + we.getMarblesAmount());
+                    System.out.println("*****************************");
                     return;
                 }
 
@@ -405,6 +408,7 @@ public class GameLogic implements Screen {
 
                 weReady = true;
                 we.setStatement(chooseStmt.getSelected());
+                System.out.println("changeddddddddddddddddd");
 
                 chooseStmt.setVisible(false);
                 chooseStmt.setTouchable(disabled);
@@ -465,5 +469,13 @@ public class GameLogic implements Screen {
             converted[item] = toConvert[item];
         }
         return converted;
+    }
+
+    private boolean isEven(int value){
+        return value % 2 == 0;
+    }
+
+    private boolean isOdd(int value){
+        return value % 2 != 0;
     }
 }
