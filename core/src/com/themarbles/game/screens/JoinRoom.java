@@ -107,7 +107,7 @@ public class JoinRoom implements Screen {
                     String decToken = decodeToken(textFieldEnterToken.getText());
                     String host = getHost(decToken);
                     int port = getPort(decToken);
-                    entryPoint.me = new Socket(host, port);
+                    entryPoint.client = new Socket(host, port);
                 } catch (IOException | StringIndexOutOfBoundsException | IllegalArgumentException e) {
                     return;
                 }

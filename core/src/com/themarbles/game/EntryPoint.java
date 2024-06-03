@@ -1,9 +1,8 @@
 package com.themarbles.game;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.themarbles.game.constants.Constants;
+import com.badlogic.gdx.utils.Null;
 import com.themarbles.game.screens.CreateRoom;
 import com.themarbles.game.screens.GameLogic;
 import com.themarbles.game.screens.JoinRoom;
@@ -21,10 +20,12 @@ public class EntryPoint extends Game {
     public SpriteBatch batch;
 
     //backends
+    @Null
     public ServerSocket server;
-    public Socket me;
+    public Socket client;
 
     //invite token
+    @Null
     public String inviteToken;
 
     //player state
@@ -39,11 +40,10 @@ public class EntryPoint extends Game {
         createRoom = new CreateRoom(this);
         gameLogic = new GameLogic(this);
         batch = new SpriteBatch();
-        OrthographicCamera
 
         //backends
         server = null;
-        me = null;
+        client = null;
 
         //token
         inviteToken = null;

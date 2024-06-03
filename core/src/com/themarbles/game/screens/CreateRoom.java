@@ -111,7 +111,7 @@ public class CreateRoom implements Screen {
         create.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                //trying to create new server
+                //creating server
                 try {
                     entryPoint.server = new ServerSocket(parseInt(textFieldEnterPort.getText()), 2);
                     entryPoint.inviteToken = generateToken(getLocalHost().getHostAddress(),

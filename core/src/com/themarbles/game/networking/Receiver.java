@@ -1,11 +1,10 @@
 package com.themarbles.game.networking;
 
-import static com.badlogic.gdx.Gdx.*;
-
-import com.badlogic.gdx.Gdx;
 import com.themarbles.game.interfaces.Executable;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 
@@ -15,6 +14,8 @@ public class Receiver {
 
     private ObjectInputStream reader;
     private ObjectOutputStream writer;
+
+    private long logNum = 0;
 
     public Receiver(Socket abstractSocket) {
         this.abstractSocket = abstractSocket;
@@ -26,10 +27,23 @@ public class Receiver {
         }
     }
 
-    public void send_data(DataPacket packet){
+    public void sendData(DataPacket packet){
         try {
+
             writer.writeObject(packet);
+
             writer.flush();
+            writer.reset();
+
+            System.out.printf("*********COMMITTED(%d)***********\n", logNum);
+            //System.out.println("[" + logNum + "]  " + "game_state: " + packet.getGameState());
+            //System.out.println("[" + logNum + "]  " + "ourTurn: " + packet.getTurnOrder());
+            //System.out.println("[" + logNum + "]  " + "weReady: " + packet.getPlayerReady());
+            System.out.println("[" + logNum + "]  " + "bet: " + packet.getPlayerData().getBet());
+            System.out.println("[" + logNum + "]  " + "statement: " + packet.getPlayerData().getStatement());
+            System.out.println("[" + logNum + "]  " + "marblesAmount: " + packet.getPlayerData().getMarblesAmount());
+            System.out.println("[" + logNum + "]  " + "*****************************");
+            logNum++;
         } catch (SocketException ignored){
             //TODO do smth
         } catch (IOException e) {
@@ -37,13 +51,25 @@ public class Receiver {
         }
     }
 
-    public DataPacket get_data() {
+    public DataPacket getData() {
         try {
-            return (DataPacket) reader.readObject();
+            DataPacket received = (DataPacket) reader.readObject();
+            System.out.printf("*********RECEIVED(%d)***********\n", logNum);
+            //System.out.println("[" + logNum + "]  " + "game_state: " + currPacket.getGameState());
+            //System.out.println("[" + logNum + "]  " + "ourTurn: " + currPacket.getTurnOrder());
+            //System.out.println("[" + logNum + "]  " + "weReady: " + weReady);
+            //System.out.println("[" + logNum + "]  " + "opponentReady: " + currPacket.getPlayerReady());
+            System.out.println("[" + logNum + "]  " + "bet: " + received.getPlayerData().getBet());
+            System.out.println("[" + logNum + "]  " + "statement: " + received.getPlayerData().getStatement());
+            System.out.println("[" + logNum + "]  " + "marbles amount: " + received.getPlayerData().getMarblesAmount());
+            System.out.println("[" + logNum + "]  " + "*****************************");
+            logNum++;
+            return received;
         } catch (SocketException e){
+            System.exit(1488);
             return null;
         } catch (IOException | ClassNotFoundException e){
-            e.printStackTrace();
+            System.out.println("IOException/CNFException: " + e.getMessage());
             return null;
         }
     }
@@ -53,15 +79,7 @@ public class Receiver {
         task.execute();
     }
 
-    public boolean disconnected(){
-        return !abstractSocket.isConnected();
-    }
-
-    public boolean connected(){
-        return abstractSocket.isConnected();
-    }
-
-    public void release(){
+    public void disable(){
         try {
             abstractSocket.close();
             reader.close();

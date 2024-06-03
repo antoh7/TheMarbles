@@ -4,6 +4,7 @@ import com.themarbles.game.myImpls.SerializableImage;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.UUID;
 
 public class Player implements Serializable {
 
@@ -16,12 +17,19 @@ public class Player implements Serializable {
     //hand params
     private final float default_x, default_y;
     private static final float defaultWidth = 300, defaultHeight = 450;
+
     //
 
     public static final long serialVersionUID = 1111111111L;
 
+    private String playerSecret;
+
     public Player(SerializableImage playerHandClosed, SerializableImage playerHandOpened,float handX, float handY){
+
+        this.playerSecret = UUID.randomUUID().toString().replace("-", "");
+
         this.marblesAmount = 5;
+
         this.playerHandClosed = playerHandClosed;
         this.playerHandOpened = playerHandOpened;
         this.default_x = handX;
@@ -41,11 +49,11 @@ public class Player implements Serializable {
         return playerHandOpened;
     }
 
-    public void setPlayerHandClosed(SerializableImage playerHandClosed) {
-        this.playerHandClosed.setDrawable(playerHandClosed.getDrawable());
-        this.playerHandClosed = playerHandClosed;
-        initHand(this.playerHandClosed, default_x, default_y, defaultWidth, defaultHeight);
-    }
+    //public void setPlayerHandClosed(SerializableImage playerHandClosed) {
+    //    this.playerHandClosed.setDrawable(playerHandClosed.getDrawable());
+    //    this.playerHandClosed = playerHandClosed;
+    //    initHand(this.playerHandClosed, default_x, default_y, defaultWidth, defaultHeight);
+    //}
 
     public void setPlayerHandOpened(SerializableImage playerHandOpened){
         this.playerHandOpened.setDrawable(playerHandOpened.getDrawable());
@@ -91,6 +99,10 @@ public class Player implements Serializable {
     private void initHand(SerializableImage hand, float x, float y, float width, float height){
         hand.setPosition(x, y);
         hand.setSize(width, height);
+    }
+
+    public String getPlayerSecret() {
+        return playerSecret;
     }
 
 }
