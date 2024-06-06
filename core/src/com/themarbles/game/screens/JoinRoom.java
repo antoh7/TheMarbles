@@ -1,9 +1,10 @@
 package com.themarbles.game.screens;
 
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
@@ -11,24 +12,30 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.StringBuilder;
 import com.themarbles.game.EntryPoint;
-import com.themarbles.game.constants.Constants;
 
 import java.io.IOException;
-import java.lang.StringIndexOutOfBoundsException;
 import java.net.Socket;
 import java.util.Base64;
 
 import static com.badlogic.gdx.Gdx.*;
+import static com.badlogic.gdx.Input.OnscreenKeyboardType.Password;
+import static com.badlogic.gdx.Input.Peripheral.OnscreenKeyboard;
 import static com.badlogic.gdx.utils.ScreenUtils.clear;
+import static com.themarbles.game.constants.Constants.*;
+import static java.lang.Integer.parseInt;
+import static java.util.Base64.getDecoder;
 
 public class JoinRoom implements Screen {
-    private EntryPoint entryPoint;
-    private TextField textFieldEnterToken;
-    private TextButton create, cancel;
-    private Stage stage;
+    private final EntryPoint entryPoint;
+    private final TextField textFieldEnterToken;
+    private final TextButton create, cancel;
+    private final Stage stage;
+    private final Image background;
     public JoinRoom(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
         stage = new Stage();
+
+        background = new Image(new Texture(files.internal("textures/joinroom_menu_background.jpg")));
 
         create = new TextButton("JOIN", new Skin(files.internal("buttons/connectbuttonassets/connectbuttonskin.json")));
         cancel = new TextButton("CANCEL",new Skin(files.internal("buttons/cancelbuttonassets/cancelbuttonskin.json")));
@@ -40,10 +47,12 @@ public class JoinRoom implements Screen {
     @Override
     public void show() {
 
+        initBackground();
         initCancelButton();
         initConnectButton();
         initTokenInputLabel();
 
+        stage.addActor(background);
         stage.addActor(create);
         stage.addActor(cancel);
         stage.addActor(textFieldEnterToken);
@@ -86,8 +95,8 @@ public class JoinRoom implements Screen {
 
     //############### private methods #####################
     private void initCancelButton(){
-        cancel.setPosition((float) Constants.WIDTH/2 - Constants.WIDGET_PREFERRED_WIDTH - 20, (float) Constants.HEIGHT/2 - 60);
-        cancel.setSize(Constants.WIDGET_PREFERRED_WIDTH,Constants.WIDGET_PREFERRED_HEIGHT);
+        cancel.setPosition((float) WIDTH/2 - WIDGET_PREFERRED_WIDTH - 20, (float) HEIGHT/2 - 60);
+        cancel.setSize(WIDGET_PREFERRED_WIDTH, WIDGET_PREFERRED_HEIGHT);
         cancel.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor){
@@ -97,8 +106,8 @@ public class JoinRoom implements Screen {
     }
 
     private void initConnectButton(){
-        create.setPosition((float) Constants.WIDTH/2 + Constants.WIDGET_PREFERRED_HEIGHT, (float) Constants.HEIGHT/2 - 60);
-        create.setSize(Constants.WIDGET_PREFERRED_WIDTH,Constants.WIDGET_PREFERRED_HEIGHT);
+        create.setPosition((float) WIDTH/2 + WIDGET_PREFERRED_HEIGHT, (float) HEIGHT/2 - 60);
+        create.setSize(WIDGET_PREFERRED_WIDTH, WIDGET_PREFERRED_HEIGHT);
         create.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -111,27 +120,27 @@ public class JoinRoom implements Screen {
                 } catch (IOException | StringIndexOutOfBoundsException | IllegalArgumentException e) {
                     return;
                 }
-                entryPoint.playerState = Constants.CLIENT;
-                entryPoint.setScreen(entryPoint.gameLogic);
+                entryPoint.deviceState = CLIENT;
+                entryPoint.setScreen(entryPoint.room);
             }
         });
     }
 
     private void initTokenInputLabel(){
-        textFieldEnterToken.setPosition((float) Constants.WIDTH/2 - 130, (float) Constants.HEIGHT/2 + 100);
-        textFieldEnterToken.setSize(Constants.WIDGET_PREFERRED_WIDTH + 100, Constants.WIDGET_PREFERRED_HEIGHT - 20);
+        textFieldEnterToken.setPosition((float) WIDTH/2 - 130, (float) HEIGHT/2 + 100);
+        textFieldEnterToken.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT - 20);
         textFieldEnterToken.setAlignment(Align.center);
-        if(input.isPeripheralAvailable(Input.Peripheral.OnscreenKeyboard)) {
-            textFieldEnterToken.setOnscreenKeyboard(visible -> {
-                input.setOnscreenKeyboardVisible(true, Input.OnscreenKeyboardType.Default);
-            });
+        if(input.isPeripheralAvailable(OnscreenKeyboard)) {
+            //TODO decide
+            textFieldEnterToken.setOnscreenKeyboard(visible ->
+                    input.setOnscreenKeyboardVisible(true, Password));
         }
 
     }
 
     private String decodeToken(String token){
         StringBuilder builder = new StringBuilder();
-        Base64.Decoder decoder = Base64.getDecoder();
+        Base64.Decoder decoder = getDecoder();
         byte[] decoded_bytes = decoder.decode(token);
         for (byte b: decoded_bytes){
             builder.append((char) b);
@@ -139,11 +148,16 @@ public class JoinRoom implements Screen {
         return builder.toString();
     }
 
-    private String getHost(String decoded_token){
-        return decoded_token.substring(0,decoded_token.indexOf(":"));
+    private String getHost(String decodedToken){
+        return decodedToken.substring(0,decodedToken.indexOf(":"));
     }
 
-    private int getPort(String decoded_token){
-        return Integer.parseInt(decoded_token.substring(decoded_token.indexOf(":") + 1));
+    private int getPort(String decodedToken){
+        return parseInt(decodedToken.substring(decodedToken.indexOf(":") + 1));
+    }
+
+    private void initBackground(){
+        background.setPosition(0, 0);
+        background.setSize(WIDTH, HEIGHT);
     }
 }

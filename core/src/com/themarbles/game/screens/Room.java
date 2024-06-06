@@ -6,6 +6,7 @@ import static com.badlogic.gdx.Gdx.graphics;
 import static com.badlogic.gdx.Gdx.input;
 import static com.badlogic.gdx.scenes.scene2d.Touchable.disabled;
 import static com.badlogic.gdx.scenes.scene2d.Touchable.enabled;
+import static com.badlogic.gdx.utils.Align.center;
 import static com.themarbles.game.constants.Constants.EVEN;
 import static com.themarbles.game.constants.Constants.GAME_FINISHED;
 import static com.themarbles.game.constants.Constants.GAME_RUNNING;
@@ -27,13 +28,12 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.List;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Null;
 import com.themarbles.game.EntryPoint;
 import com.themarbles.game.Player;
 import com.themarbles.game.myImpls.SerializableImage;
@@ -41,22 +41,22 @@ import com.themarbles.game.networking.DataPacket;
 import com.themarbles.game.networking.Receiver;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
-public class GameLogic implements Screen {
+public class Room implements Screen {
+
     private final EntryPoint entryPoint;
     private final Stage stage;
     private final Image background;
     private final TextArea tokenArea;
-    private final List<Integer> chooseBet;
-    private final List<String> chooseStmt;
-    private SerializableImage[] opponentHandInstances;
-    private SerializableImage [] ourHandInstances;
+    private final SelectBox<Integer> chooseBet;
+    private final SelectBox<String> chooseStmt;
+    private Map<Integer, SerializableImage> opponentHandInstances;
+    private Map<Integer, SerializableImage> ourHandInstances;
     private final Thread acceptingThread, netUpdateListener, eventUpdateListener;
     private final TextButton startButton;
     private Player we, opponent;
@@ -65,13 +65,9 @@ public class GameLogic implements Screen {
     private String game_state;
     private Receiver receiver;
     private boolean ourTurn, endOfStage,weReady, opponentReady;
-
     private boolean canBeShown;
 
-    //TODO delete
-    private long logNum = 0;
-
-    public GameLogic(EntryPoint entryPoint){
+    public Room(EntryPoint entryPoint){
         this.entryPoint = entryPoint;
         stage = new Stage();
 
@@ -87,8 +83,8 @@ public class GameLogic implements Screen {
         eventUpdateListener = initEventUpdateManager();
 
         startButton = new TextButton("S T A R T", new Skin(files.internal("buttons/startbuttonassets/startbuttonskin.json")));
-        chooseBet = new List<>(new Skin(files.internal("labels/chooselist/chooselistskin.json")));
-        chooseStmt = new List<>(new Skin(files.internal("labels/chooselist/chooselistskin.json")));
+        chooseBet = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlist.json")));
+        chooseStmt = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlist.json")));
 
         background = new Image(new Texture(files.internal("textures/game_background.jpg")));
 
@@ -99,8 +95,8 @@ public class GameLogic implements Screen {
 
         loadImages();
 
-        we = new Player(ourHandClosed, ourHandInstances[0], WIDTH - Player.getDefaultWidth(), 0);
-        opponent = new Player(opponentHandClosed, opponentHandInstances[0], 0, HEIGHT - Player.getDefaultHeight());
+        we = new Player(ourHandClosed, new SerializableImage(), WIDTH - Player.getDefaultWidth(), 0);
+        opponent = new Player(opponentHandClosed, new SerializableImage(), 0, HEIGHT - Player.getDefaultHeight());
 
 
     }
@@ -115,15 +111,19 @@ public class GameLogic implements Screen {
 
         stage.addActor(background);
 
-        if (entryPoint.playerState.equals(SERVER)) {
+        if (entryPoint.deviceState.equals(SERVER)) {
             stage.addActor(startButton);
             stage.addActor(tokenArea);
         }
 
         stage.addActor(we.getPlayerHandClosed());
         stage.addActor(opponent.getPlayerHandClosed());
+        stage.addActor(we.getPlayerHandOpened());
+        stage.addActor(opponent.getPlayerHandOpened());
+
         stage.addActor(chooseBet);
         stage.addActor(chooseStmt);
+
         input.setInputProcessor(stage);
 
         acceptingThread.start();
@@ -142,16 +142,18 @@ public class GameLogic implements Screen {
             if(!eventUpdateListener.isAlive()) eventUpdateListener.start();
 
             if (weReady) {
-                //System.out.println("[INFO]: weReady " + weReady);
                 we.setHandVisible(we.getPlayerHandClosed(), true);
             }
             if (opponentReady) {
-                //System.out.println("[INFO]: opponentReady " + opponentReady);
                 opponent.setHandVisible(opponent.getPlayerHandClosed(), true);
             }
             if (endOfStage){
+                we.setHandVisible(we.getPlayerHandClosed(), false);
+                opponent.setHandVisible(opponent.getPlayerHandClosed(), false);
+
                 we.setHandVisible(we.getPlayerHandOpened(), true);
                 opponent.setHandVisible(opponent.getPlayerHandOpened(), true);
+
             }
 
 
@@ -217,14 +219,11 @@ public class GameLogic implements Screen {
 
                 currPacket = receiver.getData();
 
-                //if (currPacket != null) {
                 abstractPlayer = currPacket.getPlayerData();
-                //System.out.println(abstractPlayer.getPlayerSecret());
 
                 opponent.setBet(abstractPlayer.getBet());
                 opponent.setMarblesAmount(abstractPlayer.getMarblesAmount());
                 opponent.setStatement(abstractPlayer.getStatement());
-                opponent.setPlayerHandOpened(opponentHandInstances[abstractPlayer.getMarblesAmount()]);
 
                 synchronized (this) {
                     game_state = currPacket.getGameState();
@@ -232,24 +231,6 @@ public class GameLogic implements Screen {
                     opponentReady = currPacket.getPlayerReady();
                 }
 
-                System.out.printf("*********RECEIVED(%d)***********\n", logNum);
-                //System.out.println("[" + logNum + "]  " + "game_state: " + currPacket.getGameState());
-                //System.out.println("[" + logNum + "]  " + "ourTurn: " + currPacket.getTurnOrder());
-                //System.out.println("[" + logNum + "]  " + "weReady: " + weReady);
-                //System.out.println("[" + logNum + "]  " + "opponentReady: " + currPacket.getPlayerReady());
-                System.out.println("[" + logNum + "]  " + "bet: " + abstractPlayer.getBet());
-                System.out.println("[" + logNum + "]  " + "statement: " + abstractPlayer.getStatement());
-                System.out.println("[" + logNum + "]  " + "marbles amount: " + abstractPlayer.getMarblesAmount());
-                System.out.println("[" + logNum + "]  " + "*****************************");
-                logNum++;
-                //System.out.printf("datapacket was received at %d:%d:%d\n",currPacket.getTimestamp().getHours(),
-                //                                                        currPacket.getTimestamp().getMinutes(),
-                //
-                //
-                //                                                      currPacket.getTimestamp().getSeconds());
-                //System.out.println(abstractPlayer.getPlayerSecret());
-
-                //}
                 timedWaiting(MILLISECONDS, 100);
             }
         });
@@ -261,9 +242,9 @@ public class GameLogic implements Screen {
     private Thread initEventUpdateManager(){
         Thread t = new Thread(() -> {
             while (!game_state.equals(GAME_FINISHED)) {
+
                 synchronized (this) {
 
-                    //TODO place if(weReady){return;} in setActorVisualProps();
                     if (ourTurn && canBeShown) {
                         setActorVisualProps(chooseBet, true, enabled);
                     }
@@ -286,49 +267,68 @@ public class GameLogic implements Screen {
                     opponentReady = false;
                     endOfStage = true;
 
-                    final int ourMarblesAmount;
-                    final int opponentMarblesAmount;
-                    final int ourBet;
-                    final int opponentBet;
+                    final int ourMarblesAmount = we.getMarblesAmount();
+                    final int opponentMarblesAmount = opponent.getMarblesAmount();
+                    final String ourStmt = we.getStatement();
+                    final String opponentStmt = opponent.getStatement();
 
-                    //synchronized (this){
-                        ourMarblesAmount = we.getMarblesAmount();
-                        opponentMarblesAmount = opponent.getMarblesAmount();
-                        ourBet = we.getBet();
-                        opponentBet = opponent.getBet();
+                    int ourBet = we.getBet();
+                    int opponentBet = opponent.getBet();
 
-                   // }
+                    int opponentMarblesAmountOnHand = 0, ourMarblesAmountOnHand = 0;
 
-                    we.setPlayerHandOpened(ourHandInstances[we.getMarblesAmount()]);
+                    we.setPlayerHandOpened(ourHandInstances.get(ourBet));
+                    opponent.setPlayerHandOpened(opponentHandInstances.get(opponentBet));
 
                     timedWaiting(SECONDS, 3);
 
+                    //opponent guessing our bet
                     if (ourTurn){
-                        if (opponent.getStatement().equals(EVEN) && isEven(ourBet)){
+                        System.out.println("opponent quessing now");
+                        if ((opponentStmt.equals(EVEN) && isEven(ourBet)) || (opponentStmt.equals(ODD) && isOdd(ourBet))){
+                            System.out.println("opponent guessed right!");
+
                             opponent.setMarblesAmount(opponentMarblesAmount + ourBet);
                             we.setMarblesAmount(ourMarblesAmount - opponentBet);
-                        } else if (opponent.getStatement().equals(ODD) && isOdd(ourBet)) {
-                            opponent.setMarblesAmount(opponentMarblesAmount + ourBet);
-                            we.setMarblesAmount(ourMarblesAmount - opponentBet);
+                            ourMarblesAmountOnHand = ourBet - opponentBet;
+                            opponentMarblesAmountOnHand = opponentBet + ourBet;
+
                         } else{
+                            System.out.println("opponent guessed wrong!");
+
                             we.setMarblesAmount(ourMarblesAmount + ourBet);
                             opponent.setMarblesAmount(opponentMarblesAmount - ourBet);
+                            ourMarblesAmountOnHand = ourBet + opponentBet;
+                            opponentMarblesAmountOnHand = opponentBet - ourBet;
+
                         }
                     }
 
+                    //we guessing opponent`s bet
                     if (!ourTurn){
-                        if (we.getStatement().equals(EVEN) && isEven(opponentBet)){
+                        System.out.println("you guessing now");
+                        if ((ourStmt.equals(EVEN) && isEven(opponentBet)) || (ourStmt.equals(ODD) && isOdd(opponentBet))){
+                            System.out.println("you guessed right!");
+
                             we.setMarblesAmount(ourMarblesAmount + opponentBet);
                             opponent.setMarblesAmount(opponentMarblesAmount - ourBet);
-                        } else if (we.getStatement().equals(ODD) && isOdd(opponentBet)) {
-                            we.setMarblesAmount(ourMarblesAmount + opponentBet);
-                            opponent.setMarblesAmount(opponentMarblesAmount - ourBet);
+                            ourMarblesAmountOnHand = ourBet + opponentBet;
+                            opponentMarblesAmountOnHand = opponentBet - ourBet;
+
+
                         } else {
+                            System.out.println("you guessed wrong!");
+
                             we.setMarblesAmount(ourMarblesAmount - opponentBet);
                             opponent.setMarblesAmount(opponentMarblesAmount + opponentBet);
+                            ourMarblesAmountOnHand = ourBet - opponentBet;
+                            opponentMarblesAmountOnHand = opponentBet + ourBet;
+
                         }
                     }
-                    we.setPlayerHandOpened(ourHandInstances[we.getMarblesAmount()]);
+
+                    we.setPlayerHandOpened(ourHandInstances.get(checkValue(ourMarblesAmountOnHand)));
+                    opponent.setPlayerHandOpened(opponentHandInstances.get(checkValue(opponentMarblesAmountOnHand)));
 
                     timedWaiting(SECONDS, 3);
 
@@ -347,8 +347,8 @@ public class GameLogic implements Screen {
 
     private void initStartButton(){
         startButton.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT + 35);
-        startButton.setPosition((float) WIDTH/2 - WIDGET_PREFERRED_WIDTH,
-                (float) HEIGHT/2 - WIDGET_PREFERRED_HEIGHT);
+        startButton.setPosition((float) WIDTH/2 - startButton.getWidth() / 2,
+                (float) HEIGHT/2 - startButton.getHeight() / 2);
         startButton.addListener(new ChangeListener() {
             @Override
             @SuppressWarnings("deprecated")
@@ -379,13 +379,16 @@ public class GameLogic implements Screen {
 
         game_state = GAME_RUNNING;
 
-        System.out.println("turn: " + ourTurn);
         receiver.sendData(new DataPacket(game_state, ourTurn, weReady, we));
     }
 
     private void reset(){
-        //System.out.println("reset");
-        ourTurn = !ourTurn;
+        if (!(we.getMarblesAmount() == 1)) {
+            ourTurn = !ourTurn;
+        }
+
+        we.setHandVisible(we.getPlayerHandOpened(), false);
+        opponent.setHandVisible(opponent.getPlayerHandOpened(), false);
 
         canBeShown = true;
         weReady = false;
@@ -395,7 +398,7 @@ public class GameLogic implements Screen {
         we.setHandVisible(we.getPlayerHandClosed(), false);
         opponent.setHandVisible(opponent.getPlayerHandClosed(), false);
 
-        if (entryPoint.playerState.equals(SERVER)){
+        if (entryPoint.deviceState.equals(SERVER)){
             receiver.sendData(new DataPacket(game_state, ourTurn, weReady, we));
         }
 
@@ -426,8 +429,11 @@ public class GameLogic implements Screen {
     }
 
     private void initChooseBet(){
-        chooseBet.setPosition((float) WIDTH/3, (float) HEIGHT/3);
-        chooseBet.setSize((float) WIDTH/3, (float) HEIGHT/3);
+        chooseBet.setAlignment(center);
+        chooseBet.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT + 35);
+        chooseBet.setPosition((float) WIDTH / 2 - chooseBet.getWidth() / 2,
+                (float) HEIGHT / 2 - chooseBet.getHeight() / 2);
+
         chooseBet.setItems(converter(IntStream.rangeClosed(1, 5).toArray()));
         chooseBet.addListener(new ChangeListener() {
             @Override
@@ -437,8 +443,7 @@ public class GameLogic implements Screen {
                 int ma = chooseBet.getSelected();
 
                 we.setBet(ma);
-                we.setPlayerHandOpened(ourHandInstances[ma]);
-                //we.setStatement("test stmt");
+                we.setPlayerHandOpened(ourHandInstances.get(ma));
 
                 if (ourTurn) {
                     weReady = true;
@@ -458,8 +463,11 @@ public class GameLogic implements Screen {
     }
 
     private void initChooseStmt() {
-        chooseStmt.setPosition((float) WIDTH / 3, (float) HEIGHT / 3);
-        chooseStmt.setSize((float) WIDTH / 3, (float) HEIGHT / 3);
+        chooseStmt.setAlignment(center);
+        chooseStmt.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT + 35);
+        chooseStmt.setPosition((float) WIDTH / 2 - chooseStmt.getWidth() / 2,
+                (float) HEIGHT / 2 - chooseStmt.getHeight() / 2);
+
         chooseStmt.setItems(Array.with("ODD", "EVEN"));
         chooseStmt.addListener(new ChangeListener() {
             @Override
@@ -480,16 +488,18 @@ public class GameLogic implements Screen {
     }
 
     private void loadImages(){
-        opponentHandInstances = new SerializableImage[11];
-        ourHandInstances = new SerializableImage[11];
+
+        opponentHandInstances = new HashMap<>();
+        ourHandInstances = new HashMap<>();
+
         for(int i = 0; i < 11; i++){
-            opponentHandInstances[i] = new SerializableImage(new Texture(files.internal("textures/op_h_" + i + "_o.png")));
-            ourHandInstances[i] = new SerializableImage(new Texture(files.internal("textures/ou_h_" + i + "_o.png")));
+            opponentHandInstances.put(i, new SerializableImage(new Texture("textures/op_h_" + i + "_o.png")));
+            ourHandInstances.put(i, new SerializableImage(new Texture("textures/ou_h_" + i + "_o.png")));
         }
 
     }
 
-    private void gameFinished(){
+    private void isGameFinished(){
         //TODO remake
         if (we.getMarblesAmount() <= 0){
             System.out.println("DEFEAT");
@@ -503,9 +513,20 @@ public class GameLogic implements Screen {
         reset();
     }
 
+    // ******************************* util methods *************************************
+
     private void setActorVisualProps(Actor actor, boolean visible, Touchable touchable){
         actor.setVisible(visible);
         actor.setTouchable(touchable);
+    }
+
+    private int checkValue(int value){
+        //checks if value < 0
+        System.out.println(value);
+        if (value < 0){
+            value = 0;
+        }
+        return value;
     }
 
     private Integer[] converter(int[] toConvert){

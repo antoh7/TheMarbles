@@ -2,9 +2,7 @@ package com.themarbles.game;
 
 import com.themarbles.game.myImpls.SerializableImage;
 
-import java.io.Serial;
 import java.io.Serializable;
-import java.util.UUID;
 
 public class Player implements Serializable {
 
@@ -22,11 +20,7 @@ public class Player implements Serializable {
 
     public static final long serialVersionUID = 1111111111L;
 
-    private String playerSecret;
-
     public Player(SerializableImage playerHandClosed, SerializableImage playerHandOpened,float handX, float handY){
-
-        this.playerSecret = UUID.randomUUID().toString().replace("-", "");
 
         this.marblesAmount = 5;
 
@@ -95,14 +89,9 @@ public class Player implements Serializable {
     public static float getDefaultHeight(){
         return defaultHeight;
     }
-
     private void initHand(SerializableImage hand, float x, float y, float width, float height){
         hand.setPosition(x, y);
         hand.setSize(width, height);
-    }
-
-    public String getPlayerSecret() {
-        return playerSecret;
     }
 
 }

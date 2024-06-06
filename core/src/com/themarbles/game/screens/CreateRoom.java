@@ -16,8 +16,10 @@ import static java.lang.String.valueOf;
 import static java.net.InetAddress.getLocalHost;
 
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
@@ -30,14 +32,18 @@ import java.net.ServerSocket;
 import java.util.Base64;
 
 public class CreateRoom implements Screen {
-    private EntryPoint entryPoint;
-    private TextField textFieldEnterPort;
-    private TextButton create, cancel;
-    private Stage stage;
+    private final EntryPoint entryPoint;
+    private final TextField textFieldEnterPort;
+
+    private final Image background;
+    private final TextButton create, cancel;
+    private final Stage stage;
 
     public CreateRoom(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
         stage = new Stage();
+
+        background = new Image(new Texture(files.internal("textures/createroom_menu_background.jpg")));
 
         create = new TextButton("CREATE", new Skin(files.internal("buttons/createbuttonassets/createbuttonskin.json")));
         cancel = new TextButton("CANCEL",new Skin(files.internal("buttons/cancelbuttonassets/cancelbuttonskin.json")));
@@ -49,10 +55,12 @@ public class CreateRoom implements Screen {
     @Override
     public void show() {
 
+        initBackground();
         initCancelButton();
         initCreateButton();
         initInputLabel();
 
+        stage.addActor(background);
         stage.addActor(textFieldEnterPort);
         stage.addActor(create);
         stage.addActor(cancel);
@@ -119,8 +127,8 @@ public class CreateRoom implements Screen {
                 } catch (IOException | IllegalArgumentException e) {
                     return;
                 }
-                entryPoint.playerState = SERVER;
-                entryPoint.setScreen(entryPoint.gameLogic);
+                entryPoint.deviceState = SERVER;
+                entryPoint.setScreen(entryPoint.room);
             }
         });
     }
@@ -139,9 +147,9 @@ public class CreateRoom implements Screen {
         textFieldEnterPort.setMaxLength(5);
         textFieldEnterPort.setAlignment(Align.center);
         if(input.isPeripheralAvailable(OnscreenKeyboard)) {
-            textFieldEnterPort.setOnscreenKeyboard(visible -> {
-                input.setOnscreenKeyboardVisible(true, NumberPad);
-            });
+            //TODO decide 2
+            textFieldEnterPort.setOnscreenKeyboard(visible ->
+                    input.setOnscreenKeyboardVisible(true, NumberPad));
         }
     }
 
@@ -149,5 +157,10 @@ public class CreateRoom implements Screen {
         Base64.Encoder encoder = Base64.getEncoder();
         String orig = host + ":" + port;
         return encoder.encodeToString(orig.getBytes());
+    }
+
+    private void initBackground(){
+        background.setPosition(0, 0);
+        background.setSize(WIDTH, HEIGHT);
     }
 }

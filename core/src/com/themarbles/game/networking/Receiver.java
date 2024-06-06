@@ -15,8 +15,6 @@ public class Receiver {
     private ObjectInputStream reader;
     private ObjectOutputStream writer;
 
-    private long logNum = 0;
-
     public Receiver(Socket abstractSocket) {
         this.abstractSocket = abstractSocket;
         try {
@@ -31,45 +29,24 @@ public class Receiver {
         try {
 
             writer.writeObject(packet);
-
             writer.flush();
             writer.reset();
 
-            System.out.printf("*********COMMITTED(%d)***********\n", logNum);
-            //System.out.println("[" + logNum + "]  " + "game_state: " + packet.getGameState());
-            //System.out.println("[" + logNum + "]  " + "ourTurn: " + packet.getTurnOrder());
-            //System.out.println("[" + logNum + "]  " + "weReady: " + packet.getPlayerReady());
-            System.out.println("[" + logNum + "]  " + "bet: " + packet.getPlayerData().getBet());
-            System.out.println("[" + logNum + "]  " + "statement: " + packet.getPlayerData().getStatement());
-            System.out.println("[" + logNum + "]  " + "marblesAmount: " + packet.getPlayerData().getMarblesAmount());
-            System.out.println("[" + logNum + "]  " + "*****************************");
-            logNum++;
-        } catch (SocketException ignored){
+        } catch (SocketException disconnected){
             //TODO do smth
         } catch (IOException e) {
-            System.exit(1);
+            System.exit(10);
         }
     }
 
     public DataPacket getData() {
         try {
-            DataPacket received = (DataPacket) reader.readObject();
-            System.out.printf("*********RECEIVED(%d)***********\n", logNum);
-            //System.out.println("[" + logNum + "]  " + "game_state: " + currPacket.getGameState());
-            //System.out.println("[" + logNum + "]  " + "ourTurn: " + currPacket.getTurnOrder());
-            //System.out.println("[" + logNum + "]  " + "weReady: " + weReady);
-            //System.out.println("[" + logNum + "]  " + "opponentReady: " + currPacket.getPlayerReady());
-            System.out.println("[" + logNum + "]  " + "bet: " + received.getPlayerData().getBet());
-            System.out.println("[" + logNum + "]  " + "statement: " + received.getPlayerData().getStatement());
-            System.out.println("[" + logNum + "]  " + "marbles amount: " + received.getPlayerData().getMarblesAmount());
-            System.out.println("[" + logNum + "]  " + "*****************************");
-            logNum++;
-            return received;
+            return (DataPacket) reader.readObject();
         } catch (SocketException e){
-            System.exit(1488);
+            System.exit(10);
             return null;
         } catch (IOException | ClassNotFoundException e){
-            System.out.println("IOException/CNFException: " + e.getMessage());
+            System.out.println(e.getMessage());
             return null;
         }
     }

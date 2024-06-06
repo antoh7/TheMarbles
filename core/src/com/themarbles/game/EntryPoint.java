@@ -4,7 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Null;
 import com.themarbles.game.screens.CreateRoom;
-import com.themarbles.game.screens.GameLogic;
+import com.themarbles.game.screens.Room;
 import com.themarbles.game.screens.JoinRoom;
 import com.themarbles.game.screens.MainMenu;
 
@@ -16,7 +16,7 @@ public class EntryPoint extends Game {
     public JoinRoom joinRoom;
     public CreateRoom createRoom;
     public MainMenu mainMenu;
-    public GameLogic gameLogic;
+    public Room room;
     public SpriteBatch batch;
 
     //backends
@@ -29,7 +29,7 @@ public class EntryPoint extends Game {
     public String inviteToken;
 
     //player state
-    public String playerState;
+    public String deviceState;
 
 
     @SuppressWarnings("NewApi")
@@ -38,7 +38,7 @@ public class EntryPoint extends Game {
         mainMenu = new MainMenu(this);
         joinRoom = new JoinRoom(this);
         createRoom = new CreateRoom(this);
-        gameLogic = new GameLogic(this);
+        room = new Room(this);
         batch = new SpriteBatch();
 
         //backends
@@ -49,7 +49,7 @@ public class EntryPoint extends Game {
         inviteToken = null;
 
         //player state
-        playerState = null;
+        deviceState = null;
 
         setScreen(mainMenu);
 
