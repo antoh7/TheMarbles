@@ -1,5 +1,7 @@
 package com.themarbles.game.utils;
 
+import static com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.*;
+
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -7,17 +9,19 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 
 public class FontGenerator {
 
-    private static FreeTypeFontGenerator generator;
-    private static FreeTypeFontGenerator.FreeTypeFontParameter parameter;
+    public static BitmapFont generateFont(FileHandle pathToFont, int size, Color color){
 
-    public static BitmapFont generateFont(FileHandle pathToFont){
-        generator = new FreeTypeFontGenerator(pathToFont);
-        return generator.generateFont(parameter);
-    }
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(pathToFont);
+        FreeTypeFontParameter parameter = new FreeTypeFontParameter();
+        BitmapFont font;
 
-    public static void initParameter(int size, Color color){
-        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = size;
         parameter.color = color;
+
+        font = generator.generateFont(parameter);
+
+        return font;
+
     }
+
 }

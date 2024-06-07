@@ -19,11 +19,14 @@ import static com.themarbles.game.constants.Constants.WAITING_FOR_START;
 import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_HEIGHT;
 import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_WIDTH;
 import static com.themarbles.game.constants.Constants.WIDTH;
+import static com.themarbles.game.utils.FontGenerator.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
@@ -60,6 +63,8 @@ public class Room implements Screen {
     private final Thread acceptingThread, netUpdateListener, eventUpdateListener;
     private final TextButton startButton;
     private Player we, opponent;
+    private final BitmapFont indicatorFont;
+
 
 
     private String game_state;
@@ -82,6 +87,8 @@ public class Room implements Screen {
         netUpdateListener = initNetUpdateListener();
         eventUpdateListener = initEventUpdateManager();
 
+        indicatorFont = generateFont(files.internal("fonts/font.ttf"), 50, Color.ROYAL);
+
         startButton = new TextButton("S T A R T", new Skin(files.internal("buttons/startbuttonassets/startbuttonskin.json")));
         chooseBet = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlist.json")));
         chooseStmt = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlist.json")));
@@ -95,8 +102,8 @@ public class Room implements Screen {
 
         loadImages();
 
-        we = new Player(ourHandClosed, new SerializableImage(), WIDTH - Player.getDefaultWidth(), 0);
-        opponent = new Player(opponentHandClosed, new SerializableImage(), 0, HEIGHT - Player.getDefaultHeight());
+        we = new Player(ourHandClosed, new SerializableImage(), WIDTH - Player.getDefaultHandWidth(), 0);
+        opponent = new Player(opponentHandClosed, new SerializableImage(), 0, HEIGHT - Player.getDefaultHandHeight());
 
 
     }
@@ -136,8 +143,18 @@ public class Room implements Screen {
         stage.act(graphics.getDeltaTime());
         stage.draw();
 
-        // hand rendering
+        //hand rendering
         if (game_state.equals(GAME_RUNNING)) {
+
+            String text;
+
+            synchronized (this) {
+                text = ourTurn ? "Turn: yours" : "Turn: opponent`s";
+            }
+
+            indicatorFont.draw(entryPoint.batch, text, 75, 55);
+            indicatorFont.draw(entryPoint.batch, "marbles remain: " + we.getMarblesAmount(), 405, 55);
+
 
             if(!eventUpdateListener.isAlive()) eventUpdateListener.start();
 
@@ -336,7 +353,6 @@ public class Room implements Screen {
 
                 }
 
-
             }
 
         });
@@ -493,8 +509,8 @@ public class Room implements Screen {
         ourHandInstances = new HashMap<>();
 
         for(int i = 0; i < 11; i++){
-            opponentHandInstances.put(i, new SerializableImage(new Texture("textures/op_h_" + i + "_o.png")));
-            ourHandInstances.put(i, new SerializableImage(new Texture("textures/ou_h_" + i + "_o.png")));
+            opponentHandInstances.put(i, new SerializableImage(new Texture(files.internal("textures/op_h_" + i + "_o.png"))));
+            ourHandInstances.put(i, new SerializableImage(new Texture(files.internal("textures/ou_h_" + i + "_o.png"))));
         }
 
     }

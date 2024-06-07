@@ -17,6 +17,7 @@ public class SerializableImage extends Image implements Serializable {
         super(texture);
     }
 
+    //serializable image object with no texture
     public SerializableImage() {}
 
 }

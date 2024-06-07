@@ -14,13 +14,12 @@ public class Player implements Serializable {
 
     //hand params
     private final float default_x, default_y;
-    private static final float defaultWidth = 300, defaultHeight = 450;
+    private static final float defaultWidth = 380, defaultHeight = 460;
 
-    //
 
     public static final long serialVersionUID = 1111111111L;
 
-    public Player(SerializableImage playerHandClosed, SerializableImage playerHandOpened,float handX, float handY){
+    public Player(SerializableImage playerHandClosed, SerializableImage playerHandOpened, float handX, float handY){
 
         this.marblesAmount = 5;
 
@@ -35,6 +34,7 @@ public class Player implements Serializable {
         setHandVisible(this.playerHandClosed, false);
         setHandVisible(this.playerHandOpened, false);
     }
+
     public SerializableImage getPlayerHandClosed(){
         return playerHandClosed;
     }
@@ -42,12 +42,6 @@ public class Player implements Serializable {
     public SerializableImage getPlayerHandOpened(){
         return playerHandOpened;
     }
-
-    //public void setPlayerHandClosed(SerializableImage playerHandClosed) {
-    //    this.playerHandClosed.setDrawable(playerHandClosed.getDrawable());
-    //    this.playerHandClosed = playerHandClosed;
-    //    initHand(this.playerHandClosed, default_x, default_y, defaultWidth, defaultHeight);
-    //}
 
     public void setPlayerHandOpened(SerializableImage playerHandOpened){
         this.playerHandOpened.setDrawable(playerHandOpened.getDrawable());
@@ -82,16 +76,17 @@ public class Player implements Serializable {
         this.statement = statement;
     }
 
-    public static float getDefaultWidth(){
-        return defaultWidth;
-    }
-
-    public static float getDefaultHeight(){
-        return defaultHeight;
-    }
     private void initHand(SerializableImage hand, float x, float y, float width, float height){
         hand.setPosition(x, y);
         hand.setSize(width, height);
+    }
+
+    public static float getDefaultHandWidth(){
+        return defaultWidth;
+    }
+
+    public static float getDefaultHandHeight(){
+        return defaultHeight;
     }
 
 }
