@@ -32,6 +32,9 @@ public class Receiver {
             writer.flush();
             writer.reset();
 
+            //System.out.println("written: " +
+            //        packet + "\n");
+
         } catch (SocketException disconnected){
             //TODO do smth
         } catch (IOException e) {

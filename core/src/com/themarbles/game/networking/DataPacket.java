@@ -34,4 +34,20 @@ public class DataPacket implements Serializable {
     public Player getPlayerData(){
         return playerData;
     }
+
+    @Override
+    public String toString(){
+        return """
+                turnOrder: %b,
+                playerReady: %b,
+                playerBet: %d,
+                playerStatement: %s,
+                playerMarblesAmount: %d
+               """
+                .formatted(turnOrder,
+                        playerReady,
+                        playerData.getBet(),
+                        playerData.getStatement(),
+                        playerData.getMarblesAmount());
+    }
 }

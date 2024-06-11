@@ -17,6 +17,7 @@ public class EntryPoint extends Game {
     public CreateRoom createRoom;
     public MainMenu mainMenu;
     public Room room;
+
     public SpriteBatch batch;
 
     //backends
@@ -28,7 +29,7 @@ public class EntryPoint extends Game {
     @Null
     public String inviteToken;
 
-    //player state
+    //device state
     public String deviceState;
 
 

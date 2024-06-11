@@ -56,9 +56,8 @@ public class MainMenu implements Screen {
 
 	@Override
 	public void render(float delta) {
-		clear(1,1,1,1);
 
-		stage.act(Gdx.graphics.getDeltaTime());
+		stage.act(delta);
 
 		stage.draw();
 
