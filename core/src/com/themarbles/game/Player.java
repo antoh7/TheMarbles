@@ -6,8 +6,8 @@ import java.io.Serializable;
 
 public class Player implements Serializable {
 
-    private SerializableImage playerHandClosed;
-    private SerializableImage playerHandOpened;
+    private final SerializableImage playerHandClosed;
+    private final SerializableImage playerHandOpened;
     private int marblesAmount;
     private int bet;
     private String statement;

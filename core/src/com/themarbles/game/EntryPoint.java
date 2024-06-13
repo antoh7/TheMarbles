@@ -13,6 +13,7 @@ import java.net.Socket;
 
 
 public class EntryPoint extends Game {
+
     public JoinRoom joinRoom;
     public CreateRoom createRoom;
     public MainMenu mainMenu;
@@ -41,16 +42,6 @@ public class EntryPoint extends Game {
         createRoom = new CreateRoom(this);
         room = new Room(this);
         batch = new SpriteBatch();
-
-        //backends
-        server = null;
-        client = null;
-
-        //token
-        inviteToken = null;
-
-        //player state
-        deviceState = null;
 
         setScreen(mainMenu);
 

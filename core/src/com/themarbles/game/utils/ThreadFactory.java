@@ -7,8 +7,6 @@ public class ThreadFactory {
 
     Map<String, Thread> threadBox = new HashMap<>();
 
-    public ThreadFactory() {}
-
     public void createAndAdd(Runnable task, String name, boolean daemon){
         Thread newThread = new Thread(task, name);
         newThread.setDaemon(daemon);

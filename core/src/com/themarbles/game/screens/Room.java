@@ -1,34 +1,12 @@
 package com.themarbles.game.screens;
 
-import static com.badlogic.gdx.Gdx.files;
-import static com.badlogic.gdx.Gdx.input;
-import static com.badlogic.gdx.utils.Align.center;
-import static com.themarbles.game.constants.Constants.EVEN;
-import static com.themarbles.game.constants.Constants.GAME_FINISHED;
-import static com.themarbles.game.constants.Constants.GAME_RUNNING;
-import static com.themarbles.game.constants.Constants.HEIGHT;
-import static com.themarbles.game.constants.Constants.ODD;
-import static com.themarbles.game.constants.Constants.RANDOMIZING_TURN;
-import static com.themarbles.game.constants.Constants.SERVER;
-import static com.themarbles.game.constants.Constants.WAITING_FOR_PLAYER_CONNECT;
-import static com.themarbles.game.constants.Constants.WAITING_FOR_START;
-import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_HEIGHT;
-import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_WIDTH;
-import static com.themarbles.game.constants.Constants.WIDTH;
-import static com.themarbles.game.utils.FontGenerator.generateFont;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.themarbles.game.EntryPoint;
@@ -41,9 +19,17 @@ import com.themarbles.game.utils.ThreadFactory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
+
+import static com.badlogic.gdx.Gdx.*;
+import static com.themarbles.game.utils.GameUtils.*;
+import static com.themarbles.game.constants.Constants.*;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+
+import static com.badlogic.gdx.math.MathUtils.random;
+import static com.themarbles.game.utils.FontGenerator.generateFont;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static com.badlogic.gdx.utils.Align.center;
 
 public class Room implements Screen {
 
@@ -56,9 +42,12 @@ public class Room implements Screen {
     private final BitmapFont indicatorFont;
     private final ThreadFactory threadFactory;
     private final TextButton startButton;
+    private final Sound betMadeSound;
 
     private Map<Integer, SerializableImage> opponentHandInstances;
     private Map<Integer, SerializableImage> ourHandInstances;
+    private Map<Integer, Sound> marblesHittingSounds;
+    private Map<Integer, Sound> givingMarblesAwaySounds;
     private Player we, opponent;
     private String game_state;
     private Receiver receiver;
@@ -80,34 +69,35 @@ public class Room implements Screen {
         threadFactory.createAndAdd(this::initNetUpdateListener, "net_update_listener_thread", true);
         threadFactory.createAndAdd(this::initEventUpdateManager, "event_update_manager_thread", true);
 
-
         indicatorFont = generateFont(files.internal("fonts/font.ttf"), 50, Color.ROYAL);
 
         startButton = new TextButton("S T A R T", new Skin(files.internal("buttons/startbuttonassets/startbuttonskin.json")));
         betSelection = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlist.json")));
         statementSelection = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlist.json")));
 
-        background = new Image(new Texture(files.internal("textures/game_background.jpg")));
-
         tokenArea = new TextArea(null, new Skin(files.internal("labels/tokenfield/tokenfieldskin.json")));
 
-        SerializableImage ourHandClosed = new SerializableImage((new Texture(files.internal("textures/ou_h_c.png"))));
-        SerializableImage opponentHandClosed = new SerializableImage((new Texture(files.internal("textures/op_h_c.png"))));
-
+        background = new Image(new Texture(files.internal("textures/game_background.jpg")));
         loadImages();
 
-        we = new Player(ourHandClosed, new SerializableImage(), WIDTH - Player.getDefaultHandWidth(), 0);
-        opponent = new Player(opponentHandClosed, new SerializableImage(), 0, HEIGHT - Player.getDefaultHandHeight());
+        betMadeSound = audio.newSound(files.internal("sounds/bet_made.mp3"));
+        loadSounds();
+
+        we = new Player(new SerializableImage((new Texture(files.internal("textures/ou_h_c.png")))),
+                new SerializableImage(), WIDTH - Player.getDefaultHandWidth(), 0);
+        opponent = new Player(new SerializableImage((new Texture(files.internal("textures/op_h_c.png")))),
+                new SerializableImage(), 0, HEIGHT - Player.getDefaultHandHeight());
+
+        initBackground();
+        initStartButton();
+        initBetSelectionWindow();
+        initStatementSelectionWindow();
     }
 
     @Override
     public void show() {
 
-        initBackground();
-        initStartButton();
         initTokenArea();
-        initBetSelectionWindow();
-        initStatementSelectionWindow();
 
         stage.addActor(background);
 
@@ -185,14 +175,16 @@ public class Room implements Screen {
 
     @Override
     public void hide() {
-
+        stage.clear();
     }
 
     @Override
     public void dispose() {
         stage.dispose();
-        receiver.disable();
+        betMadeSound.dispose();
         indicatorFont.dispose();
+        receiver.disable();
+        disposeSounds();
     }
 
 
@@ -331,6 +323,8 @@ public class Room implements Screen {
                     }
                 }
 
+                givingMarblesAwaySounds.get(random(0, givingMarblesAwaySounds.size() - 1)).play();
+
                 we.setPlayerHandOpened(ourHandInstances.get(checkValue(ourMarblesAmountOnHand)));
                 opponent.setPlayerHandOpened(opponentHandInstances.get(checkValue(opponentMarblesAmountOnHand)));
 
@@ -369,14 +363,14 @@ public class Room implements Screen {
     }
 
     private void initTokenArea(){
-        String text = """
+        String text = """ 
                                   INVITE TOKEN:
                                        %s
                       """.formatted(entryPoint.inviteToken).replaceAll("\n", "");
 
         tokenArea.setPosition((float) WIDTH/2 - startButton.getWidth() / 2,
                 (float) HEIGHT/2 - startButton.getHeight() * 2 + 30);
-        tokenArea.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT + 35);
+        tokenArea.setSize(WIDGET_PREFERRED_WIDTH + 200, WIDGET_PREFERRED_HEIGHT + 35);
 
         tokenArea.setAlignment(center);
         tokenArea.setText(text);
@@ -406,11 +400,19 @@ public class Room implements Screen {
                 we.setPlayerHandOpened(ourHandInstances.get(ma));
 
                 if (ourTurn) {
+
+                    marblesHittingSounds.get(random(0, marblesHittingSounds.size() - 1)).play();
+
                     weReady = true;
                     setActorVisualProps(betSelection, false);
+
                     receiver.sendData(new DataPacket(game_state, ourTurn, weReady, we));
+
+                    betMadeSound.play();
                     return;
                 }
+
+                marblesHittingSounds.get(random(0, marblesHittingSounds.size() - 1)).play();
 
                 setActorVisualProps(statementSelection, true);
 
@@ -432,12 +434,12 @@ public class Room implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
 
                 we.setStatement(statementSelection.getSelected());
-
                 weReady = true;
 
                 setActorVisualProps(betSelection, false);
-
                 setActorVisualProps(statementSelection, false);
+
+                betMadeSound.play();
 
                 receiver.sendData(new DataPacket(game_state, ourTurn, weReady, we));
 
@@ -448,64 +450,38 @@ public class Room implements Screen {
     }
 
 
-    // ******************************* util methods *************************************
-
-    private void setActorVisualProps(Actor actor, boolean visible){
-        // makes actor visible/invisible
-        actor.setVisible(visible);
-    }
-
-    private int checkValue(int value){
-        // checks if value < 0
-        if (value < 0){
-            value = 0;
-        }
-        return value;
-    }
-
-    private void timedWaiting(TimeUnit unit, int time){
-        // stops current thread until timeout is over
-        try {
-            unit.sleep(time);
-        } catch (InterruptedException e) {
-            System.out.println("visualising thread was interrupted");
-            System.exit(10);
-        }
-    }
-
-    private Array<Integer> computeBetsRange(int start, int end) {
-        // calculates max available marbles amount,
-        // which can be a bet
-        int[] intArray = IntStream.rangeClosed(start, end).toArray();
-        Array<Integer> integerArray = new Array<>();
-        for (int element: intArray) {
-            integerArray.add(element);
-        }
-        return integerArray;
-    }
-
-    private boolean isEven(int value){
-        // checks if value is even
-        return value % 2 == 0;
-    }
-
-    private boolean isOdd(int value){
-        // checks if value is odd
-        return value % 2 != 0;
-    }
-
-
-    // &&&&&&&&&&&&&&&&&&&&&&&&&& another methods &&&&&&&&&&&&&&&&&&&&&&&&
+    // &&&&&&&&&&&&&&&&&&&&&&&&&& load methods &&&&&&&&&&&&&&&&&&&&&&&&
 
     private void loadImages(){
         // loads hand textures
         opponentHandInstances = new HashMap<>();
         ourHandInstances = new HashMap<>();
         for(int i = 0; i < 11; i++){
-            opponentHandInstances.put(i, new SerializableImage(new Texture(files.internal("textures/op_h_" + i + "_o.png"))));
-            ourHandInstances.put(i, new SerializableImage(new Texture(files.internal("textures/ou_h_" + i + "_o.png"))));
+            opponentHandInstances.put(i, new SerializableImage(new Texture(files.internal("textures/op_h_%d_o.png".formatted(i)))));
+            ourHandInstances.put(i, new SerializableImage(new Texture(files.internal("textures/ou_h_%d_o.png".formatted(i)))));
         }
     }
+
+    private void loadSounds(){
+        marblesHittingSounds = new HashMap<>();
+        givingMarblesAwaySounds = new HashMap<>();
+
+        for(int i = 0; i < 3; i++){
+            marblesHittingSounds.put(i, audio.newSound(files.internal("sounds/marbles_hitting_%d.mp3".formatted(i))));
+            givingMarblesAwaySounds.put(i, audio.newSound(files.internal("sounds/giving_marbles_away_%d.mp3".formatted(i))));
+
+        }
+    }
+
+    private void disposeSounds(){
+        for(int i = 0; i < 3; i++){
+            marblesHittingSounds.get(i).dispose();
+            givingMarblesAwaySounds.get(i).dispose();
+        }
+    }
+
+
+    // ********************************* in-game methods *****************************
 
     private void isGameFinished(){
         // checks if a game must be finished
@@ -525,10 +501,9 @@ public class Room implements Screen {
     private void choosePlayerTurn(){
         // at start, once selects whose turn to make bet
         game_state = RANDOMIZING_TURN;
-        Random random = new Random();
         boolean[] turnVariants = new boolean[]{true, false};
 
-        ourTurn = turnVariants[random.nextInt(turnVariants.length)];
+        ourTurn = turnVariants[random(0, turnVariants.length - 1)];
 
         game_state = GAME_RUNNING;
 

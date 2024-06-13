@@ -1,21 +1,22 @@
 package com.themarbles.game.screens;
 
+import static com.badlogic.gdx.Gdx.audio;
 import static com.badlogic.gdx.Gdx.files;
-import static com.badlogic.gdx.Gdx.graphics;
 import static com.badlogic.gdx.Gdx.input;
 import static com.badlogic.gdx.Input.OnscreenKeyboardType.NumberPad;
 import static com.badlogic.gdx.Input.Peripheral.OnscreenKeyboard;
-import static com.badlogic.gdx.utils.ScreenUtils.clear;
 import static com.themarbles.game.constants.Constants.HEIGHT;
 import static com.themarbles.game.constants.Constants.SERVER;
 import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_HEIGHT;
 import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_WIDTH;
 import static com.themarbles.game.constants.Constants.WIDTH;
+import static com.themarbles.game.utils.PreGameStartedUtils.generateToken;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.valueOf;
 import static java.net.InetAddress.getLocalHost;
 
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -29,7 +30,6 @@ import com.themarbles.game.EntryPoint;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.Base64;
 
 public class CreateRoom implements Screen {
     private final EntryPoint entryPoint;
@@ -39,26 +39,29 @@ public class CreateRoom implements Screen {
     private final TextButton create, cancel;
     private final Stage stage;
 
+    private final Sound buttonPressedSound;
+
     public CreateRoom(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
         stage = new Stage();
 
         background = new Image(new Texture(files.internal("textures/createroom_menu_background.jpg")));
 
+        buttonPressedSound = audio.newSound(files.internal("sounds/button_pressed.mp3"));
+
         create = new TextButton("CREATE", new Skin(files.internal("buttons/createbuttonassets/createbuttonskin.json")));
         cancel = new TextButton("CANCEL",new Skin(files.internal("buttons/cancelbuttonassets/cancelbuttonskin.json")));
         textFieldEnterPort = new TextField("ENTER PORT:",new Skin(files.internal("labels/enterlabel/enterlabelskin.json")));
-
-
-    }
-
-    @Override
-    public void show() {
 
         initBackground();
         initCancelButton();
         initCreateButton();
         initInputLabel();
+
+    }
+
+    @Override
+    public void show() {
 
         stage.addActor(background);
         stage.addActor(textFieldEnterPort);
@@ -72,8 +75,8 @@ public class CreateRoom implements Screen {
     public void render(float delta) {
 
         stage.act(delta);
-
         stage.draw();
+
     }
 
     @Override
@@ -93,21 +96,26 @@ public class CreateRoom implements Screen {
 
     @Override
     public void hide() {
+        stage.clear();
         input.setOnscreenKeyboardVisible(false);
     }
 
     @Override
     public void dispose() {
         stage.dispose();
+        buttonPressedSound.dispose();
     }
 
-    //############### private methods #####################
+
+    //########################## init methods #########################
+
     private void initCancelButton(){
         cancel.setSize(WIDGET_PREFERRED_WIDTH, WIDGET_PREFERRED_HEIGHT);
         cancel.setPosition((float) WIDTH/2 - WIDGET_PREFERRED_WIDTH - 20, (float) HEIGHT/2 - 20);
         cancel.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                buttonPressedSound.play();
                 entryPoint.setScreen(entryPoint.mainMenu);
             }
         });
@@ -119,6 +127,7 @@ public class CreateRoom implements Screen {
         create.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+
                 //creating server
                 try {
                     entryPoint.server = new ServerSocket(parseInt(textFieldEnterPort.getText()), 2);
@@ -128,6 +137,7 @@ public class CreateRoom implements Screen {
                     return;
                 }
                 entryPoint.deviceState = SERVER;
+                buttonPressedSound.play();
                 entryPoint.setScreen(entryPoint.room);
             }
         });
@@ -153,14 +163,9 @@ public class CreateRoom implements Screen {
         }
     }
 
-    private String generateToken(String host, int port){
-        Base64.Encoder encoder = Base64.getEncoder();
-        String orig = host + ":" + port;
-        return encoder.encodeToString(orig.getBytes());
-    }
-
     private void initBackground(){
         background.setPosition(0, 0);
         background.setSize(WIDTH, HEIGHT);
     }
+
 }
