@@ -2,12 +2,11 @@ package com.themarbles.game;
 
 import java.util.List;
 
-/** class for testing **/
+/** Class for testing **/
+
 public class TestClass {
     public static void main(String[] args){
         method2();
-
-
     }
 
     private static void method2() {
@@ -87,5 +86,5 @@ public class TestClass {
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%********+++=======++++++++%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%#****+++++++++++%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-     */ //ctrl+c --> notepad.exe --> ctrl+v
+     */
 }

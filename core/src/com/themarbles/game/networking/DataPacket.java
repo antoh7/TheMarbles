@@ -4,6 +4,11 @@ import com.themarbles.game.Player;
 
 import java.io.Serializable;
 
+/** Represents a simple container for data, needs being sent to other device.
+ * @see Player
+ * @see Serializable
+ * **/
+
 public class DataPacket implements Serializable {
     private final Player playerData;
     private final String gameState;

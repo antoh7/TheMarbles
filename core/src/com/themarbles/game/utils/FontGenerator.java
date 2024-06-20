@@ -7,6 +7,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 
+/** Util, using for generating {@link com.badlogic.gdx.graphics.g2d.BitmapFont}
+ * @see BitmapFont
+ */
+
 public class FontGenerator {
 
     public static BitmapFont generateFont(FileHandle pathToFont, int size, Color color){

@@ -3,6 +3,10 @@ package com.themarbles.game.utils;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Util, using to quickly create/invoke new threads.
+ * @see Thread
+ * **/
+
 public class ThreadFactory {
 
     Map<String, Thread> threadBox = new HashMap<>();

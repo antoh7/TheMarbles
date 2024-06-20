@@ -20,16 +20,23 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.themarbles.game.EntryPoint;
 
 import java.io.IOException;
 import java.net.Socket;
+
+/** Provides you a simple joining room menu.
+ * @see Screen
+ * @see Room
+ * **/
 
 public class JoinRoom implements Screen {
 
@@ -114,29 +121,29 @@ public class JoinRoom implements Screen {
     private void initCancelButton(){
         cancel.setPosition((float) WIDTH/2 - WIDGET_PREFERRED_WIDTH - 20, (float) HEIGHT/2 - 60);
         cancel.setSize(WIDGET_PREFERRED_WIDTH, WIDGET_PREFERRED_HEIGHT);
-        cancel.addListener(new ChangeListener() {
+        cancel.addListener(new ClickListener() {
             @Override
-            public void changed(ChangeEvent event, Actor actor){
+            public void clicked (InputEvent event, float x, float y) {
                 buttonPressedSound.play();
                 entryPoint.setScreen(entryPoint.mainMenu);
             }
+
         });
     }
 
     private void initJoinButton(){
         join.setPosition((float) WIDTH/2 + WIDGET_PREFERRED_HEIGHT, (float) HEIGHT/2 - 60);
         join.setSize(WIDGET_PREFERRED_WIDTH, WIDGET_PREFERRED_HEIGHT);
-        join.addListener(new ChangeListener() {
+        join.addListener(new ClickListener(){
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
-
+            public void clicked (InputEvent event, float x, float y) {
                 //trying to create new client
                 try {
                     String decodedToken = decodeToken(textFieldEnterToken.getText());
 
                     String host = getHost(decodedToken);
                     int port = getPort(decodedToken);
-                    
+
                     entryPoint.client = new Socket(host, port);
                 } catch (IOException | StringIndexOutOfBoundsException | IllegalArgumentException e) {
                     return;

@@ -1,16 +1,49 @@
 package com.themarbles.game.screens;
 
+import static com.badlogic.gdx.Gdx.audio;
+import static com.badlogic.gdx.Gdx.files;
+import static com.badlogic.gdx.Gdx.input;
+import static com.badlogic.gdx.math.MathUtils.random;
+import static com.badlogic.gdx.utils.Align.center;
+import static com.themarbles.game.constants.Constants.EVEN;
+import static com.themarbles.game.constants.Constants.GAME_FINISHED;
+import static com.themarbles.game.constants.Constants.GAME_RUNNING;
+import static com.themarbles.game.constants.Constants.HEIGHT;
+import static com.themarbles.game.constants.Constants.ODD;
+import static com.themarbles.game.constants.Constants.RANDOMIZING_TURN;
+import static com.themarbles.game.constants.Constants.SERVER;
+import static com.themarbles.game.constants.Constants.WAITING_FOR_PLAYER_CONNECT;
+import static com.themarbles.game.constants.Constants.WAITING_FOR_START;
+import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_HEIGHT;
+import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_WIDTH;
+import static com.themarbles.game.constants.Constants.WIDTH;
+import static com.themarbles.game.utils.FontGenerator.generateFont;
+import static com.themarbles.game.utils.GameUtils.checkValue;
+import static com.themarbles.game.utils.GameUtils.computeBetsRange;
+import static com.themarbles.game.utils.GameUtils.isEven;
+import static com.themarbles.game.utils.GameUtils.isOdd;
+import static com.themarbles.game.utils.GameUtils.setActorVisualProps;
+import static com.themarbles.game.utils.GameUtils.timedWaiting;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.themarbles.game.EntryPoint;
 import com.themarbles.game.Player;
+import com.themarbles.game.myImpls.SelectBox;
 import com.themarbles.game.myImpls.SerializableImage;
 import com.themarbles.game.networking.DataPacket;
 import com.themarbles.game.networking.Receiver;
@@ -20,16 +53,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.badlogic.gdx.Gdx.*;
-import static com.themarbles.game.utils.GameUtils.*;
-import static com.themarbles.game.constants.Constants.*;
-import com.badlogic.gdx.scenes.scene2d.ui.*;
-
-import static com.badlogic.gdx.math.MathUtils.random;
-import static com.themarbles.game.utils.FontGenerator.generateFont;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static com.badlogic.gdx.utils.Align.center;
+/** represents main game logic, working in multi-threaded mode, contains sound, texture, player instances.
+ * @see Screen
+ * @see SerializableImage
+ * @see Player
+ * @see Sound
+ * @see Receiver
+ * @see Stage
+ * @see SelectBox
+ * @see EntryPoint
+ * @see Map
+ * **/
 
 public class Room implements Screen {
 
@@ -69,7 +103,7 @@ public class Room implements Screen {
         threadFactory.createAndAdd(this::initNetUpdateListener, "net_update_listener_thread", true);
         threadFactory.createAndAdd(this::initEventUpdateManager, "event_update_manager_thread", true);
 
-        indicatorFont = generateFont(files.internal("fonts/font.ttf"), 50, Color.ROYAL);
+        indicatorFont = generateFont(files.internal("fonts/indicatorFont.ttf"), 50, Color.ROYAL);
 
         startButton = new TextButton("S T A R T", new Skin(files.internal("buttons/startbuttonassets/startbuttonskin.json")));
         betSelection = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlist.json")));
@@ -97,6 +131,8 @@ public class Room implements Screen {
     @Override
     public void show() {
 
+        threadFactory.startThread("accepting_thread");
+
         initTokenArea();
 
         stage.addActor(background);
@@ -116,15 +152,15 @@ public class Room implements Screen {
 
         input.setInputProcessor(stage);
 
-        threadFactory.startThread("accepting_thread");
     }
 
     @Override
     public void render(float delta){
-        entryPoint.batch.begin();
 
         stage.act(delta);
         stage.draw();
+
+        entryPoint.batch.begin();
 
         // hand rendering
         if (game_state.equals(GAME_RUNNING)) {
@@ -200,6 +236,7 @@ public class Room implements Screen {
         receiver = new Receiver(entryPoint.client);
         game_state = WAITING_FOR_START;
         threadFactory.startThread("net_update_listener_thread");
+        threadFactory.stopThread("accepting_thread");
     }
 
     private void initNetUpdateListener(){
@@ -330,7 +367,9 @@ public class Room implements Screen {
 
                 timedWaiting(SECONDS, 3);
 
-                reset();
+                if (!checkGameFinished()) {
+                  reset();
+                }
             }
         }
 
@@ -340,21 +379,19 @@ public class Room implements Screen {
         startButton.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT + 35);
         startButton.setPosition((float) WIDTH/2 - startButton.getWidth() / 2,
                 (float) HEIGHT/2 - startButton.getHeight() / 2);
-
-        startButton.addListener(new ChangeListener() {
+        startButton.addListener(new ClickListener() {
             @Override
             @SuppressWarnings("deprecated")
-            public void changed(ChangeEvent event, Actor actor) {
+            public void clicked (InputEvent event, float x, float y) {
                 if (game_state.equals(WAITING_FOR_START)) {
                     choosePlayerTurn();
 
                     setActorVisualProps(startButton, false);
                     setActorVisualProps(tokenArea, false);
-
-                    threadFactory.stopThread("accepting_thread");
                 }
             }
         });
+
     }
 
     private void initBackground(){
@@ -388,11 +425,18 @@ public class Room implements Screen {
         betSelection.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT + 35);
         betSelection.setPosition((float) WIDTH / 2 - betSelection.getWidth() / 2,
                 (float) HEIGHT / 2 - betSelection.getHeight() / 2);
-
         betSelection.setItems(computeBetsRange(1, 5));
+        betSelection.addListener(new ClickListener() {
+            @Override
+            public void clicked (InputEvent event, float x, float y) {
+                betSelection.setCanBeFired(true);
+            }
+        });
         betSelection.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+
+                if (!betSelection.getCanBeFired()) return;
 
                 int ma = betSelection.getSelected();
 
@@ -408,8 +452,8 @@ public class Room implements Screen {
 
                     receiver.sendData(new DataPacket(game_state, ourTurn, weReady, we));
 
-                    betMadeSound.play();
-                    return;
+                     betMadeSound.play();
+                     return;
                 }
 
                 marblesHittingSounds.get(random(0, marblesHittingSounds.size() - 1)).play();
@@ -483,19 +527,19 @@ public class Room implements Screen {
 
     // ********************************* in-game methods *****************************
 
-    private void isGameFinished(){
+    private boolean checkGameFinished(){
         // checks if a game must be finished
-        //TODO remake
-        if (we.getMarblesAmount() <= 0){
-            System.out.println("DEFEAT");
-            game_state = GAME_FINISHED;
+        if (we.getMarblesAmount() == 0){
+            finishGame();
+            entryPoint.setScreen(entryPoint.defeatScreen);
+            return true;
         }
-        if (opponent.getMarblesAmount() <= 0){
-            System.out.println("VICTORY");
-            game_state = GAME_FINISHED;
-
+        if (opponent.getMarblesAmount() == 0){
+            finishGame();
+            entryPoint.setScreen(entryPoint.victoryScreen);
+            return true;
         }
-        reset();
+        return false;
     }
 
     private void choosePlayerTurn(){
@@ -528,9 +572,28 @@ public class Room implements Screen {
             receiver.sendData(new DataPacket(game_state, ourTurn, weReady, we));
         } else {
             // waiting for net update listener thread
-            // receive a packet with changed turn order
+            // receive a packet with inverted turn order
             timedWaiting(SECONDS, 1);
         }
+    }
+
+    private void finishGame(){
+
+        game_state = GAME_FINISHED;
+
+        ourTurn = false;
+        weReady = false;
+        opponentReady = false;
+        endOfStage = false;
+
+        we.setPlayerHandOpened(new SerializableImage());
+        we.setMarblesAmount(5);
+        we.setBet(0);
+        we.setStatement(null);
+        opponent.setPlayerHandOpened(new SerializableImage());
+        opponent.setMarblesAmount(5);
+        opponent.setBet(0);
+        opponent.setStatement(null);
     }
     
 }

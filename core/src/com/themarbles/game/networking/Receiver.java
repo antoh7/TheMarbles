@@ -8,9 +8,16 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 
+/** The main part of game backends,
+ *  receives ({@link Receiver#getData()}) and sends ({@link Receiver#sendData(DataPacket)}) data,
+ *  wrapped in {@link DataPacket}, via {@link Socket}.
+ * @see Socket
+ * @see DataPacket
+ *  **/
+
 public class Receiver {
 
-    private Socket abstractSocket;
+    private final Socket abstractSocket;
 
     private ObjectInputStream reader;
     private ObjectOutputStream writer;
@@ -31,9 +38,6 @@ public class Receiver {
             writer.writeObject(packet);
             writer.flush();
             writer.reset();
-
-            //System.out.println("written: " +
-            //        packet + "\n");
 
         } catch (SocketException disconnected){
             //TODO do smth

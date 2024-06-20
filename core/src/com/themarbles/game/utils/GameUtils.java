@@ -6,6 +6,12 @@ import com.badlogic.gdx.utils.Array;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+/** Util, using while game is running.
+ * @see Actor
+ * @see TimeUnit
+ * @see Array
+ * **/
+
 public class GameUtils {
 
     public static void setActorVisualProps(Actor actor, boolean visible){

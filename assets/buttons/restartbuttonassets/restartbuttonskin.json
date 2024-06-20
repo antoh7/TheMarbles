@@ -1,0 +1,54 @@
+{
+"com.badlogic.gdx.graphics.g2d.BitmapFont": {
+	"reset_button_font": {
+		"file": "font.fnt",
+		"scaledSize": -1,
+		"markupEnabled": false,
+		"flip": false
+	}
+},
+"com.badlogic.gdx.graphics.Color": {
+	"reset_button_down_color": {
+		"r": 0.6392157,
+		"g": 0.5921569,
+		"b": 0.4117647,
+		"a": 1
+	},
+	"reset_button_font_color": {
+		"r": 0,
+		"g": 0,
+		"b": 0,
+		"a": 1
+	},
+	"reset_button_up_color": {
+		"r": 0.8117647,
+		"g": 0.7647059,
+		"b": 0.5686275,
+		"a": 1
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable": {
+	"reset_button_up": {
+		"name": "white-pixel",
+		"color": "reset_button_up_color",
+		"minWidth": 150,
+		"minHeight": 50
+	},
+	"reset_button_down": {
+		"name": "white-pixel",
+		"color": "reset_button_down_color",
+		"minWidth": 150,
+		"minHeight": 50
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle": {
+	"default": {
+		"font": "reset_button_font",
+		"fontColor": "reset_button_font_color",
+		"up": "reset_button_up",
+		"down": "reset_button_down",
+		"pressedOffsetX": 2,
+		"pressedOffsetY": 3
+	}
+}
+}

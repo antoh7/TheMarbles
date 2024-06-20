@@ -5,6 +5,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 import java.io.Serializable;
 
+/** Overwrites {@link com.badlogic.gdx.scenes.scene2d.ui.Image}, making it serializable.
+ * @see Image
+ * @see Serializable
+ * **/
+
 public class SerializableImage extends Image implements Serializable {
 
     public static final long serialVersionUID = 2222222222L;

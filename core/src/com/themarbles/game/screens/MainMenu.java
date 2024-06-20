@@ -11,14 +11,20 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.themarbles.game.EntryPoint;
 import com.themarbles.game.constants.Constants;
+
+/** Main menu with two buttons, activating one of these screens.
+ * @see Screen
+ * @see CreateRoom
+ * @see JoinRoom
+ * **/
 
 public class MainMenu implements Screen {
 	private final EntryPoint entryPoint;
@@ -97,8 +103,9 @@ public class MainMenu implements Screen {
 	private void initCreateButton(){
 		createButton.setSize(Constants.WIDGET_PREFERRED_WIDTH, Constants.WIDGET_PREFERRED_HEIGHT);
 		createButton.setPosition((float) Constants.WIDTH/2 + Constants.WIDGET_PREFERRED_HEIGHT, (float) Constants.HEIGHT/2 - 60);
-		createButton.addListener(new ChangeListener() {
-			public void changed (ChangeEvent event, Actor actor) {
+		createButton.addListener(new ClickListener() {
+			@Override
+			public void clicked (InputEvent event, float x, float y) {
 				buttonPressedSound.play();
 				entryPoint.setScreen(entryPoint.createRoom);
 			}
@@ -108,8 +115,9 @@ public class MainMenu implements Screen {
 	private void initJoinButton(){
 		joinButton.setSize(Constants.WIDGET_PREFERRED_WIDTH, Constants.WIDGET_PREFERRED_HEIGHT);
 		joinButton.setPosition((float) Constants.WIDTH/2 - Constants.WIDGET_PREFERRED_WIDTH - 20, (float) Constants.HEIGHT/2 - 60);
-		joinButton.addListener(new ChangeListener() {
-			public void changed (ChangeEvent event, Actor actor) {
+		joinButton.addListener(new ClickListener() {
+			@Override
+			public void clicked (InputEvent event, float x, float y) {
 				buttonPressedSound.play();
 				entryPoint.setScreen(entryPoint.joinRoom);
 			}

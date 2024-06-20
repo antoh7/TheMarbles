@@ -4,10 +4,15 @@ import com.themarbles.game.myImpls.SerializableImage;
 
 import java.io.Serializable;
 
+/** Represents basic game entity, containing marbles, hand texture, statement and bet.
+ * @see SerializableImage
+ */
+
 public class Player implements Serializable {
 
     private final SerializableImage playerHandClosed;
     private final SerializableImage playerHandOpened;
+
     private int marblesAmount;
     private int bet;
     private String statement;

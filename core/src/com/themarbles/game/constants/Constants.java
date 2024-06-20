@@ -4,6 +4,11 @@ import static com.badlogic.gdx.Gdx.graphics;
 
 import com.badlogic.gdx.math.MathUtils;
 
+/** Contains all necessary constants for a game.
+ * @see MathUtils
+ * @see com.badlogic.gdx.Graphics
+ */
+
 public class Constants {
 
     //widgets
@@ -26,4 +31,5 @@ public class Constants {
     //statements
     public static final String EVEN = "EVEN";
     public static final String ODD = "ODD";
+
 }
