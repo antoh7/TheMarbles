@@ -21,10 +21,4 @@ public class ThreadFactory {
         Thread threadToStart = threadBox.get(name);
         if (!threadToStart.isAlive()) threadToStart.start();
     }
-
-    @SuppressWarnings("deprecated")
-    public void stopThread(String name){
-        Thread threadToStop = threadBox.get(name);
-        threadToStop.stop();
-    }
 }

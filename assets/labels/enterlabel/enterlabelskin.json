@@ -2,7 +2,7 @@
 "com.badlogic.gdx.graphics.g2d.BitmapFont": {
 	"text_field_font": {
 		"file": "font.fnt",
-		"scaledSize": -1,
+		"scaledSize": 30,
 		"markupEnabled": false,
 		"flip": false
 	}

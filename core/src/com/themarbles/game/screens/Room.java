@@ -1,10 +1,11 @@
 package com.themarbles.game.screens;
 
+import static com.badlogic.gdx.Gdx.app;
 import static com.badlogic.gdx.Gdx.audio;
 import static com.badlogic.gdx.Gdx.files;
 import static com.badlogic.gdx.Gdx.input;
-import static com.badlogic.gdx.math.MathUtils.random;
 import static com.badlogic.gdx.utils.Align.center;
+import static com.badlogic.gdx.utils.Align.left;
 import static com.themarbles.game.constants.Constants.EVEN;
 import static com.themarbles.game.constants.Constants.GAME_FINISHED;
 import static com.themarbles.game.constants.Constants.GAME_RUNNING;
@@ -17,13 +18,6 @@ import static com.themarbles.game.constants.Constants.WAITING_FOR_START;
 import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_HEIGHT;
 import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_WIDTH;
 import static com.themarbles.game.constants.Constants.WIDTH;
-import static com.themarbles.game.utils.FontGenerator.generateFont;
-import static com.themarbles.game.utils.GameUtils.checkValue;
-import static com.themarbles.game.utils.GameUtils.computeBetsRange;
-import static com.themarbles.game.utils.GameUtils.isEven;
-import static com.themarbles.game.utils.GameUtils.isOdd;
-import static com.themarbles.game.utils.GameUtils.setActorVisualProps;
-import static com.themarbles.game.utils.GameUtils.timedWaiting;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.badlogic.gdx.Screen;
@@ -31,29 +25,35 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.themarbles.game.EntryPoint;
 import com.themarbles.game.Player;
 import com.themarbles.game.myImpls.SelectBox;
 import com.themarbles.game.myImpls.SerializableImage;
 import com.themarbles.game.networking.DataPacket;
 import com.themarbles.game.networking.Receiver;
+import com.themarbles.game.utils.FontGenerator;
+import com.themarbles.game.utils.GameUtils;
 import com.themarbles.game.utils.ThreadFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-/** represents main game logic, working in multi-threaded mode, contains sound, texture, player instances.
+/** represents main game logic, working in multithreaded mode, contains sound, texture, player instances.
  * @see Screen
  * @see SerializableImage
  * @see Player
@@ -70,13 +70,15 @@ public class Room implements Screen {
     private final EntryPoint entryPoint;
     private final Stage stage;
     private final Image background;
-    private final TextArea tokenArea;
     private final SelectBox<Integer> betSelection;
     private final SelectBox<String> statementSelection;
     private final BitmapFont indicatorFont;
     private final ThreadFactory threadFactory;
     private final TextButton startButton;
     private final Sound betMadeSound;
+    private final Label tokenArea;
+    private final Label tokenLabel;
+    private final GlyphLayout marblesAmountLayout, turnLayout;
 
     private Map<Integer, SerializableImage> opponentHandInstances;
     private Map<Integer, SerializableImage> ourHandInstances;
@@ -89,7 +91,8 @@ public class Room implements Screen {
 
     public Room(EntryPoint entryPoint){
         this.entryPoint = entryPoint;
-        stage = new Stage();
+
+        stage = new Stage(new ScalingViewport(Scaling.fill, WIDTH, HEIGHT));
 
         game_state = WAITING_FOR_PLAYER_CONNECT;
 
@@ -103,13 +106,17 @@ public class Room implements Screen {
         threadFactory.createAndAdd(this::initNetUpdateListener, "net_update_listener_thread", true);
         threadFactory.createAndAdd(this::initEventUpdateManager, "event_update_manager_thread", true);
 
-        indicatorFont = generateFont(files.internal("fonts/indicatorFont.ttf"), 50, Color.ROYAL);
+        indicatorFont = FontGenerator.generateFont(files.internal("fonts/indicatorFont.ttf"), 80, Color.ROYAL);
 
-        startButton = new TextButton("S T A R T", new Skin(files.internal("buttons/startbuttonassets/startbuttonskin.json")));
+        marblesAmountLayout = new GlyphLayout();
+        turnLayout = new GlyphLayout();
+
+        startButton = new TextButton("START", new Skin(files.internal("buttons/startbuttonassets/startbuttonskin.json")));
         betSelection = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlist.json")));
         statementSelection = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlist.json")));
 
-        tokenArea = new TextArea(null, new Skin(files.internal("labels/tokenfield/tokenfieldskin.json")));
+        tokenArea = new Label("", new Skin(files.internal("labels/tokenlabel/tokenlabelskin.json")));
+        tokenLabel = new Label("", new Skin(files.internal("labels/tokenlabel/tokenlabelskin.json")));
 
         background = new Image(new Texture(files.internal("textures/game_background.jpg")));
         loadImages();
@@ -123,6 +130,7 @@ public class Room implements Screen {
                 new SerializableImage(), 0, HEIGHT - Player.getDefaultHandHeight());
 
         initBackground();
+        initTokenLabel();
         initStartButton();
         initBetSelectionWindow();
         initStatementSelectionWindow();
@@ -131,9 +139,9 @@ public class Room implements Screen {
     @Override
     public void show() {
 
-        threadFactory.startThread("accepting_thread");
-
         initTokenArea();
+
+        threadFactory.startThread("accepting_thread");
 
         stage.addActor(background);
 
@@ -147,6 +155,7 @@ public class Room implements Screen {
 
         if (entryPoint.deviceState.equals(SERVER)) {
             stage.addActor(startButton);
+            stage.addActor(tokenLabel);
             stage.addActor(tokenArea);
         }
 
@@ -162,7 +171,7 @@ public class Room implements Screen {
 
         entryPoint.batch.begin();
 
-        // hand rendering
+        //hand rendering
         if (game_state.equals(GAME_RUNNING)) {
             String text;
 
@@ -170,8 +179,11 @@ public class Room implements Screen {
                 text = ourTurn ? "Turn: yours" : "Turn: opponent`s";
             }
 
-            indicatorFont.draw(entryPoint.batch, text, 75, 55);
-            indicatorFont.draw(entryPoint.batch, "marbles remain: " + we.getMarblesAmount(), 405, 55);
+            marblesAmountLayout.setText(indicatorFont, "marbles: " + we.getMarblesAmount());
+            turnLayout.setText(indicatorFont, text);
+
+            indicatorFont.draw(entryPoint.batch, turnLayout, (float) WIDTH/6 - turnLayout.width/2, turnLayout.height + 10);
+            indicatorFont.draw(entryPoint.batch, marblesAmountLayout, (float) WIDTH/6*5 - marblesAmountLayout.width/2, turnLayout.height + 10);
 
             threadFactory.startThread("event_update_manager_thread");
 
@@ -196,7 +208,6 @@ public class Room implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
     }
 
     @Override
@@ -224,19 +235,18 @@ public class Room implements Screen {
     }
 
 
-    // ################################## init methods #################################
+    // ################################## threads init methods #################################
 
     private void initAcceptingThread(){
         try {
             entryPoint.client = entryPoint.server.accept();
         } catch (NullPointerException ignore){
         } catch (IOException e) {
-            e.printStackTrace();
+            System.exit(5);
         }
         receiver = new Receiver(entryPoint.client);
         game_state = WAITING_FOR_START;
         threadFactory.startThread("net_update_listener_thread");
-        threadFactory.stopThread("accepting_thread");
     }
 
     private void initNetUpdateListener(){
@@ -247,6 +257,7 @@ public class Room implements Screen {
         while (!game_state.equals(GAME_FINISHED)) {
 
             currPacket = receiver.getData();
+            if (currPacket == null) continue;
             abstractPlayer = currPacket.getPlayerData();
 
             opponent.setBet(abstractPlayer.getBet());
@@ -267,20 +278,20 @@ public class Room implements Screen {
 
             synchronized (this) {
                 if (ourTurn && !weReady) {
-                    setActorVisualProps(betSelection, true);
+                    GameUtils.setActorVisualProps(betSelection, true);
                 }
 
             }
 
             synchronized (this) {
                 if (!ourTurn && opponentReady && !weReady) {
-                    setActorVisualProps(betSelection, true);
+                    GameUtils.setActorVisualProps(betSelection, true);
                 }
             }
 
             if (weReady && opponentReady) {
 
-                timedWaiting(SECONDS, 2);
+                GameUtils.timedWaiting(SECONDS, 2);
 
                 weReady = false;
                 opponentReady = false;
@@ -298,13 +309,14 @@ public class Room implements Screen {
                 we.setPlayerHandOpened(ourHandInstances.get(ourBet));
                 opponent.setPlayerHandOpened(opponentHandInstances.get(opponentBet));
 
-                timedWaiting(SECONDS, 3);
+                GameUtils.timedWaiting(SECONDS, 3);
 
                 //we make bet,
                 //opponent guesses it
                 if (ourTurn){
 
-                    if ((opponentStmt.equals(EVEN) && isEven(ourBet)) || (opponentStmt.equals(ODD) && isOdd(ourBet))){
+                    if ((opponentStmt.equals(EVEN) && GameUtils.isEven(ourBet)) ||
+                            (opponentStmt.equals(ODD) && GameUtils.isOdd(ourBet))){
                         if (ourBet <= opponentBet) {
                             opponent.setMarblesAmount(opponentMarblesAmount + ourBet);
                             we.setMarblesAmount(ourMarblesAmount - ourBet);
@@ -334,7 +346,8 @@ public class Room implements Screen {
                 //we guess it
                 if (!ourTurn){
 
-                    if ((ourStmt.equals(EVEN) && isEven(opponentBet)) || (ourStmt.equals(ODD) && isOdd(opponentBet))){
+                    if ((ourStmt.equals(EVEN) && GameUtils.isEven(opponentBet)) ||
+                            (ourStmt.equals(ODD) && GameUtils.isOdd(opponentBet))){
                         if (ourBet <= opponentBet) {
                             we.setMarblesAmount(ourMarblesAmount + ourBet);
                             opponent.setMarblesAmount(opponentMarblesAmount - ourBet);
@@ -360,34 +373,41 @@ public class Room implements Screen {
                     }
                 }
 
-                givingMarblesAwaySounds.get(random(0, givingMarblesAwaySounds.size() - 1)).play();
+                givingMarblesAwaySounds.get(MathUtils.random(0, givingMarblesAwaySounds.size() - 1)).play();
 
-                we.setPlayerHandOpened(ourHandInstances.get(checkValue(ourMarblesAmountOnHand)));
-                opponent.setPlayerHandOpened(opponentHandInstances.get(checkValue(opponentMarblesAmountOnHand)));
+                we.setPlayerHandOpened(ourHandInstances.get(GameUtils.checkValue(ourMarblesAmountOnHand)));
+                opponent.setPlayerHandOpened(opponentHandInstances.get(GameUtils.checkValue(opponentMarblesAmountOnHand)));
 
-                timedWaiting(SECONDS, 3);
+                GameUtils.timedWaiting(SECONDS, 3);
 
-                if (!checkGameFinished()) {
-                  reset();
-                }
+                reset();
+
+                checkGameFinished();
+
             }
         }
-
     }
+
+    // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ widgets init methods $$$$$$$$$$$$$$$$$$$$$$$$$$
+
 
     private void initStartButton(){
         startButton.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT + 35);
         startButton.setPosition((float) WIDTH/2 - startButton.getWidth() / 2,
                 (float) HEIGHT/2 - startButton.getHeight() / 2);
+
+        startButton.getLabel().setFontScale(MathUtils.floor(startButton.getWidth()/startButton.getMinWidth()),
+                MathUtils.floor(startButton.getHeight()/startButton.getMinHeight()));
+
         startButton.addListener(new ClickListener() {
             @Override
-            @SuppressWarnings("deprecated")
             public void clicked (InputEvent event, float x, float y) {
                 if (game_state.equals(WAITING_FOR_START)) {
                     choosePlayerTurn();
 
-                    setActorVisualProps(startButton, false);
-                    setActorVisualProps(tokenArea, false);
+                    GameUtils.setActorVisualProps(startButton, false);
+                    GameUtils.setActorVisualProps(tokenArea, false);
+                    GameUtils.setActorVisualProps(tokenLabel, false);
                 }
             }
         });
@@ -399,44 +419,69 @@ public class Room implements Screen {
         background.setSize(WIDTH, HEIGHT);
     }
 
-    private void initTokenArea(){
-        String text = """ 
-                                  INVITE TOKEN:
-                                       %s
-                      """.formatted(entryPoint.inviteToken).replaceAll("\n", "");
+    private void initTokenArea() {
+        String text = entryPoint.inviteToken;
 
-        tokenArea.setPosition((float) WIDTH/2 - startButton.getWidth() / 2,
-                (float) HEIGHT/2 - startButton.getHeight() * 2 + 30);
-        tokenArea.setSize(WIDGET_PREFERRED_WIDTH + 200, WIDGET_PREFERRED_HEIGHT + 35);
+        tokenArea.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT - 20);
+        tokenArea.setPosition((float) WIDTH/2 - tokenArea.getWidth()/2,
+                (float) HEIGHT/2 - tokenArea.getHeight()*2 - 30);
 
-        tokenArea.setAlignment(center);
         tokenArea.setText(text);
-        tokenArea.addListener(new ChangeListener() {
+
+        tokenArea.setFontScale(MathUtils.floor(tokenArea.getWidth()/ tokenArea.getMinWidth()),
+                MathUtils.floor(tokenArea.getHeight()/ tokenArea.getMinHeight()));
+
+        tokenArea.setAlignment(left);
+
+        tokenArea.addListener(new ClickListener() {
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                tokenArea.setText(text);
+            public void clicked (InputEvent event, float x, float y) {
+                app.getClipboard().setContents(tokenArea.getText().toString());
+                tokenLabel.setText("TOKEN COPIED!");
             }
         });
+    }
+
+    private void initTokenLabel() {
+        String text = "(CLICK TOKEN TO COPY)";
+
+        tokenLabel.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT - 20);
+        tokenLabel.setPosition((float) WIDTH/2 - tokenLabel.getWidth()/2,
+                (float) HEIGHT/2 - tokenLabel.getHeight()*2 - 50 - tokenLabel.getHeight());
+
+        tokenLabel.setText(text);
+
+        tokenLabel.setFontScale(MathUtils.floor(tokenLabel.getWidth()/ tokenLabel.getMinWidth()),
+                MathUtils.floor(tokenLabel.getHeight()/ tokenLabel.getMinHeight()));
+
+        tokenLabel.setAlignment(left);
 
     }
+
 
     private void initBetSelectionWindow(){
         betSelection.setAlignment(center);
         betSelection.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT + 35);
         betSelection.setPosition((float) WIDTH / 2 - betSelection.getWidth() / 2,
-                (float) HEIGHT / 2 - betSelection.getHeight() / 2);
-        betSelection.setItems(computeBetsRange(1, 5));
+                (float) HEIGHT / 2);
+
+        betSelection.getScrollPane().getList().setAlignment(center);
+
+        betSelection.getStyle().listStyle.selection.setBottomHeight(MathUtils.floor((float) (HEIGHT/4) / 9));
+
+        betSelection.setItems(GameUtils.computeBetsRange(1, 5));
+
         betSelection.addListener(new ClickListener() {
             @Override
             public void clicked (InputEvent event, float x, float y) {
-                betSelection.setCanBeFired(true);
+                betSelection.setCanBeExecuted(true);
             }
         });
         betSelection.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
 
-                if (!betSelection.getCanBeFired()) return;
+                if (!betSelection.getCanBeExecuted()) return;
 
                 int ma = betSelection.getSelected();
 
@@ -445,10 +490,10 @@ public class Room implements Screen {
 
                 if (ourTurn) {
 
-                    marblesHittingSounds.get(random(0, marblesHittingSounds.size() - 1)).play();
+                    marblesHittingSounds.get(MathUtils.random(0, marblesHittingSounds.size() - 1)).play();
 
                     weReady = true;
-                    setActorVisualProps(betSelection, false);
+                    GameUtils.setActorVisualProps(betSelection, false);
 
                     receiver.sendData(new DataPacket(game_state, ourTurn, weReady, we));
 
@@ -456,21 +501,26 @@ public class Room implements Screen {
                      return;
                 }
 
-                marblesHittingSounds.get(random(0, marblesHittingSounds.size() - 1)).play();
+                marblesHittingSounds.get(MathUtils.random(0, marblesHittingSounds.size() - 1)).play();
 
-                setActorVisualProps(statementSelection, true);
+                GameUtils.setActorVisualProps(statementSelection, true);
 
             }
         });
 
-        setActorVisualProps(betSelection, false);
+        GameUtils.setActorVisualProps(betSelection, false);
     }
 
     private void initStatementSelectionWindow() {
         statementSelection.setAlignment(center);
         statementSelection.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT + 35);
         statementSelection.setPosition((float) WIDTH / 2 - statementSelection.getWidth() / 2,
-                (float) HEIGHT / 2 - statementSelection.getHeight() / 2);
+                (float) HEIGHT / 2);
+
+        statementSelection.getScrollPane().getList().setAlignment(center);
+        statementSelection.getStyle().listStyle.selection.setBottomHeight(0);
+
+        statementSelection.getStyle().listStyle.selection.setBottomHeight(MathUtils.floor((float) (HEIGHT/4) / 2));
 
         statementSelection.setItems(Array.with("ODD", "EVEN"));
         statementSelection.addListener(new ChangeListener() {
@@ -480,8 +530,8 @@ public class Room implements Screen {
                 we.setStatement(statementSelection.getSelected());
                 weReady = true;
 
-                setActorVisualProps(betSelection, false);
-                setActorVisualProps(statementSelection, false);
+                GameUtils.setActorVisualProps(betSelection, false);
+                GameUtils.setActorVisualProps(statementSelection, false);
 
                 betMadeSound.play();
 
@@ -490,11 +540,11 @@ public class Room implements Screen {
             }
         });
 
-        setActorVisualProps(statementSelection, false);
+        GameUtils.setActorVisualProps(statementSelection, false);
     }
 
 
-    // &&&&&&&&&&&&&&&&&&&&&&&&&& load methods &&&&&&&&&&&&&&&&&&&&&&&&
+    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& load methods &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
     private void loadImages(){
         // loads hand textures
@@ -525,21 +575,18 @@ public class Room implements Screen {
     }
 
 
-    // ********************************* in-game methods *****************************
+    // ********************************* in-game methods ********************************
 
-    private boolean checkGameFinished(){
+    private void checkGameFinished(){
         // checks if a game must be finished
         if (we.getMarblesAmount() == 0){
             finishGame();
             entryPoint.setScreen(entryPoint.defeatScreen);
-            return true;
         }
         if (opponent.getMarblesAmount() == 0){
             finishGame();
             entryPoint.setScreen(entryPoint.victoryScreen);
-            return true;
         }
-        return false;
     }
 
     private void choosePlayerTurn(){
@@ -547,7 +594,7 @@ public class Room implements Screen {
         game_state = RANDOMIZING_TURN;
         boolean[] turnVariants = new boolean[]{true, false};
 
-        ourTurn = turnVariants[random(0, turnVariants.length - 1)];
+        ourTurn = turnVariants[MathUtils.random(0, turnVariants.length - 1)];
 
         game_state = GAME_RUNNING;
 
@@ -562,7 +609,7 @@ public class Room implements Screen {
 
         we.setHandVisible(we.getPlayerHandOpened(), false);
         opponent.setHandVisible(opponent.getPlayerHandOpened(), false);
-        betSelection.setItems(computeBetsRange(1, we.getMarblesAmount()));
+        betSelection.setItems(GameUtils.computeBetsRange(1, we.getMarblesAmount()));
 
         if (entryPoint.deviceState.equals(SERVER)){
             if (we.getMarblesAmount() == 1) ourTurn = false;
@@ -573,7 +620,8 @@ public class Room implements Screen {
         } else {
             // waiting for net update listener thread
             // receive a packet with inverted turn order
-            timedWaiting(SECONDS, 1);
+            // to avoid visual glitches
+            GameUtils.timedWaiting(SECONDS, 1);
         }
     }
 
@@ -594,6 +642,22 @@ public class Room implements Screen {
         opponent.setMarblesAmount(5);
         opponent.setBet(0);
         opponent.setStatement(null);
+
+        receiver.disable();
+        if(entryPoint.deviceState.equals(SERVER)){
+            try {
+                entryPoint.server.close();
+            } catch (IOException e) {
+                System.exit(5);
+            }
+        }
+
+        try {
+            entryPoint.client.close();
+        } catch (IOException e) {
+            System.exit(5);
+        }
+
     }
     
 }

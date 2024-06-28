@@ -3,6 +3,7 @@ package com.themarbles.game;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Null;
+import com.themarbles.game.constants.Constants;
 import com.themarbles.game.screens.CreateRoom;
 import com.themarbles.game.screens.DefeatScreen;
 import com.themarbles.game.screens.Room;
@@ -46,6 +47,8 @@ import java.net.Socket;
     @SuppressWarnings("NewApi")
     @Override
     public void create() {
+
+        System.out.printf("[SYSTEM]: width: %d; height: %d\n", Constants.WIDTH, Constants.HEIGHT);
         mainMenu = new MainMenu(this);
         joinRoom = new JoinRoom(this);
         createRoom = new CreateRoom(this);

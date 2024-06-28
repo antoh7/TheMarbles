@@ -1,5 +1,8 @@
 package com.themarbles.game;
 
+import static com.themarbles.game.constants.Constants.HEIGHT;
+import static com.themarbles.game.constants.Constants.WIDTH;
+
 import com.themarbles.game.myImpls.SerializableImage;
 
 import java.io.Serializable;
@@ -17,9 +20,9 @@ public class Player implements Serializable {
     private int bet;
     private String statement;
 
-    //hand params
-    private final float default_x, default_y;
-    private static final float defaultWidth = 380, defaultHeight = 460;
+    // hand params
+    private final float defaultX, defaultY;
+    private static final float defaultWidth = (float) WIDTH/3, defaultHeight = HEIGHT - (float) HEIGHT/3;
 
 
     public static final long serialVersionUID = 1111111111L;
@@ -30,11 +33,11 @@ public class Player implements Serializable {
 
         this.playerHandClosed = playerHandClosed;
         this.playerHandOpened = playerHandOpened;
-        this.default_x = handX;
-        this.default_y = handY;
+        this.defaultX = handX;
+        this.defaultY = handY;
 
-        initHand(this.playerHandClosed, default_x, default_y, defaultWidth, defaultHeight);
-        initHand(this.playerHandOpened, default_x, default_y, defaultWidth, defaultHeight);
+        initHand(this.playerHandClosed, defaultX, defaultY, defaultWidth, defaultHeight);
+        initHand(this.playerHandOpened, defaultX, defaultY, defaultWidth, defaultHeight);
 
         setHandVisible(this.playerHandClosed, false);
         setHandVisible(this.playerHandOpened, false);
@@ -50,7 +53,7 @@ public class Player implements Serializable {
 
     public void setPlayerHandOpened(SerializableImage playerHandOpened){
         this.playerHandOpened.setDrawable(playerHandOpened.getDrawable());
-        initHand(this.playerHandOpened, default_x, default_y, defaultWidth, defaultHeight);
+        initHand(this.playerHandOpened, defaultX, defaultY, defaultWidth, defaultHeight);
     }
 
     public void setHandVisible(SerializableImage hand, boolean state){

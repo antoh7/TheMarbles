@@ -1,6 +1,7 @@
 package com.themarbles.game.constants;
 
 import static com.badlogic.gdx.Gdx.graphics;
+import static com.badlogic.gdx.math.MathUtils.ceil;
 
 import com.badlogic.gdx.math.MathUtils;
 
@@ -11,11 +12,14 @@ import com.badlogic.gdx.math.MathUtils;
 
 public class Constants {
 
+    private static final float widthProportion = 0.2f;
+    private static final float heightProportion = 0.1f;
+
     //widgets
     public static final int WIDTH = graphics.getWidth();
     public static final int HEIGHT = graphics.getHeight();
-    public static final int WIDGET_PREFERRED_WIDTH = MathUtils.ceil((float) WIDTH/HEIGHT *  100);
-    public static final int WIDGET_PREFERRED_HEIGHT = MathUtils.ceil((float) HEIGHT/WIDTH * 100);
+    public static final int WIDGET_PREFERRED_WIDTH = ceil((float) WIDTH*widthProportion);
+    public static final int WIDGET_PREFERRED_HEIGHT = ceil((float) HEIGHT*heightProportion);
 
     //device states
     public static final String SERVER = "SERVER";

@@ -1,5 +1,6 @@
 package com.themarbles.game.screens;
 
+import static com.badlogic.gdx.Gdx.app;
 import static com.badlogic.gdx.Gdx.audio;
 import static com.badlogic.gdx.Gdx.files;
 import static com.badlogic.gdx.Gdx.input;
@@ -12,23 +13,22 @@ import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_HEIGHT;
 import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_WIDTH;
 import static com.themarbles.game.constants.Constants.WIDTH;
 
-import static com.themarbles.game.utils.PreGameStartedUtils.decodeToken;
-import static com.themarbles.game.utils.PreGameStartedUtils.getHost;
-import static com.themarbles.game.utils.PreGameStartedUtils.getPort;
-
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.themarbles.game.EntryPoint;
+import com.themarbles.game.utils.PreGameStartedUtils;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -46,13 +46,14 @@ public class JoinRoom implements Screen {
     private final TextButton join, cancel;
     private final Image background;
     private final Stage stage;
+    private final Label textFieldTokenLabel;
 
     private final Sound buttonPressedSound;
 
     public JoinRoom(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
 
-        stage = new Stage();
+        stage = new Stage(new ScalingViewport(Scaling.fill, WIDTH, HEIGHT));
 
         background = new Image(new Texture(files.internal("textures/joinroom_menu_background.jpg")));
 
@@ -61,10 +62,12 @@ public class JoinRoom implements Screen {
         join = new TextButton("JOIN", new Skin(files.internal("buttons/connectbuttonassets/connectbuttonskin.json")));
         cancel = new TextButton("CANCEL",new Skin(files.internal("buttons/cancelbuttonassets/cancelbuttonskin.json")));
         textFieldEnterToken = new TextField("ENTER TOKEN:",new Skin(files.internal("labels/enterlabel/enterlabelskin.json")));
+        textFieldTokenLabel = new Label("(TRIPLE CLICK TO PASTE)", new Skin(files.internal("labels/entertokenlabel/entertokenlabelskin.json")));
 
         initBackground();
         initCancelButton();
         initJoinButton();
+        initTokenInputField();
         initTokenInputLabel();
 
     }
@@ -76,6 +79,7 @@ public class JoinRoom implements Screen {
         stage.addActor(join);
         stage.addActor(cancel);
         stage.addActor(textFieldEnterToken);
+        stage.addActor(textFieldTokenLabel);
 
         input.setInputProcessor(stage);
 
@@ -91,7 +95,6 @@ public class JoinRoom implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
     }
 
     @Override
@@ -116,11 +119,16 @@ public class JoinRoom implements Screen {
         buttonPressedSound.dispose();
     }
 
-    //########################### init methods #####################
+    //############################# init methods ###########################
 
     private void initCancelButton(){
-        cancel.setPosition((float) WIDTH/2 - WIDGET_PREFERRED_WIDTH - 20, (float) HEIGHT/2 - 60);
         cancel.setSize(WIDGET_PREFERRED_WIDTH, WIDGET_PREFERRED_HEIGHT);
+        cancel.setPosition((float) WIDTH/2 - cancel.getWidth() - cancel.getWidth()/2,
+                (float) HEIGHT/2 - 60);
+
+        cancel.getLabel().setFontScale(MathUtils.floor(cancel.getWidth()/cancel.getMinWidth()),
+                MathUtils.floor(cancel.getHeight()/cancel.getMinHeight()));
+
         cancel.addListener(new ClickListener() {
             @Override
             public void clicked (InputEvent event, float x, float y) {
@@ -132,20 +140,25 @@ public class JoinRoom implements Screen {
     }
 
     private void initJoinButton(){
-        join.setPosition((float) WIDTH/2 + WIDGET_PREFERRED_HEIGHT, (float) HEIGHT/2 - 60);
         join.setSize(WIDGET_PREFERRED_WIDTH, WIDGET_PREFERRED_HEIGHT);
+        join.setPosition((float) WIDTH/2 + join.getWidth()/2, (float) HEIGHT/2 - 60);
+
+        join.getLabel().setFontScale(MathUtils.floor(join.getWidth()/join.getMinWidth()),
+                MathUtils.floor(join.getHeight()/join.getMinHeight()));
+
         join.addListener(new ClickListener(){
             @Override
             public void clicked (InputEvent event, float x, float y) {
                 //trying to create new client
                 try {
-                    String decodedToken = decodeToken(textFieldEnterToken.getText());
+                    String decodedToken = PreGameStartedUtils.decodeToken(textFieldEnterToken.getText());
 
-                    String host = getHost(decodedToken);
-                    int port = getPort(decodedToken);
+                    String host = PreGameStartedUtils.getHost(decodedToken);
+                    int port = PreGameStartedUtils.getPort(decodedToken);
 
                     entryPoint.client = new Socket(host, port);
                 } catch (IOException | StringIndexOutOfBoundsException | IllegalArgumentException e) {
+                    e.printStackTrace();
                     return;
                 }
                 entryPoint.deviceState = CLIENT;
@@ -155,12 +168,23 @@ public class JoinRoom implements Screen {
         });
     }
 
-    private void initTokenInputLabel(){
-        textFieldEnterToken.setPosition((float) WIDTH/2 - 130, (float) HEIGHT/2 + 100);
+    private void initTokenInputField(){
         textFieldEnterToken.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT - 20);
+        textFieldEnterToken.setPosition((float) WIDTH/2 - textFieldEnterToken.getWidth()/2, (float) HEIGHT/2 + 100);
         textFieldEnterToken.setAlignment(center);
+
+        textFieldEnterToken.addListener(new ClickListener() {
+            @Override
+            public void clicked (InputEvent event, float x, float y) {
+                if (getTapCount() == 3) {
+                    if (app.getClipboard().hasContents()) {
+                        textFieldEnterToken.setText(app.getClipboard().getContents());
+                    }
+                }
+            }
+        });
+
         if(input.isPeripheralAvailable(OnscreenKeyboard)) {
-            //TODO decide
             textFieldEnterToken.setOnscreenKeyboard(visible ->
                     input.setOnscreenKeyboardVisible(true, Password));
         }
@@ -170,6 +194,17 @@ public class JoinRoom implements Screen {
     private void initBackground(){
         background.setPosition(0, 0);
         background.setSize(WIDTH, HEIGHT);
+    }
+
+    private void initTokenInputLabel(){
+        textFieldTokenLabel.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT);
+        textFieldTokenLabel.setPosition((float) WIDTH/2 - textFieldTokenLabel.getWidth()/2,
+                textFieldEnterToken.getY() + textFieldEnterToken.getHeight());
+        textFieldTokenLabel.setAlignment(center);
+
+        textFieldTokenLabel.setFontScale(MathUtils.ceil(textFieldTokenLabel.getWidth()/ textFieldTokenLabel.getMinWidth()),
+                MathUtils.ceil(textFieldTokenLabel.getHeight()/ textFieldTokenLabel.getMinHeight()));
+
     }
 
 }

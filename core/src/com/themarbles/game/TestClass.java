@@ -1,27 +1,32 @@
 package com.themarbles.game;
 
-import java.util.List;
+import com.themarbles.game.screens.Room;
+
+import java.util.concurrent.TimeUnit;
 
 /** Class for testing **/
 
 public class TestClass {
-    public static void main(String[] args){
-        method2();
+
+    static Room room;
+    static EntryPoint entryPoint;
+
+    public TestClass() {
+        entryPoint = new EntryPoint();
     }
 
-    private static void method2() {
-        method1();
+    public static void main(String[] args) throws InterruptedException {
+
+        Thread thread1 = new Thread(() -> {
+            room = new Room(entryPoint);
+        });
+
+        thread1.start();
     }
 
-    private static void method1() {
-        StackTraceElement[] traceElements = Thread.currentThread().getStackTrace();
-        System.out.println("calling started");
-        for (StackTraceElement element: traceElements) {
-            System.out.println(element.toString());
-        }
-        System.out.println("calling finished");
+}
 
-    }
+
 
     /*
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -87,4 +92,4 @@ public class TestClass {
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%#****+++++++++++%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
      */
-}
+

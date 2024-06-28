@@ -10,27 +10,28 @@ import static com.themarbles.game.constants.Constants.SERVER;
 import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_HEIGHT;
 import static com.themarbles.game.constants.Constants.WIDGET_PREFERRED_WIDTH;
 import static com.themarbles.game.constants.Constants.WIDTH;
-import static com.themarbles.game.utils.PreGameStartedUtils.generateToken;
-import static java.lang.Integer.parseInt;
-import static java.lang.String.valueOf;
-import static java.net.InetAddress.getLocalHost;
 
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.net.NetJavaImpl;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.themarbles.game.EntryPoint;
+import com.themarbles.game.utils.PreGameStartedUtils;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 
 /** Provides you a simple room creating menu.
@@ -50,7 +51,7 @@ public class CreateRoom implements Screen {
 
     public CreateRoom(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
-        stage = new Stage();
+        stage = new Stage(new ScalingViewport(Scaling.fill, WIDTH, HEIGHT));
 
         background = new Image(new Texture(files.internal("textures/createroom_menu_background.jpg")));
 
@@ -88,7 +89,6 @@ public class CreateRoom implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
     }
 
     @Override
@@ -114,11 +114,16 @@ public class CreateRoom implements Screen {
     }
 
 
-    //########################## init methods #########################
+    //############################# init methods ##########################
 
     private void initCancelButton(){
         cancel.setSize(WIDGET_PREFERRED_WIDTH, WIDGET_PREFERRED_HEIGHT);
-        cancel.setPosition((float) WIDTH/2 - WIDGET_PREFERRED_WIDTH - 20, (float) HEIGHT/2 - 20);
+        cancel.setPosition((float) WIDTH/2 - cancel.getWidth() - cancel.getWidth()/2,
+                (float) HEIGHT/2 - 60);
+
+        cancel.getLabel().setFontScale(MathUtils.floor(cancel.getWidth()/cancel.getMinWidth()),
+                MathUtils.floor(cancel.getHeight()/cancel.getMinHeight()));
+
         cancel.addListener(new ClickListener() {
             @Override
             public void clicked (InputEvent event, float x, float y) {
@@ -130,16 +135,21 @@ public class CreateRoom implements Screen {
 
     private void initCreateButton(){
         create.setSize(WIDGET_PREFERRED_WIDTH, WIDGET_PREFERRED_HEIGHT);
-        create.setPosition((float) WIDTH/2 + WIDGET_PREFERRED_HEIGHT, (float) HEIGHT/2 - 20);
+        create.setPosition((float) WIDTH/2 + create.getWidth()/2, (float) HEIGHT/2 - 60);
+
+        create.getLabel().setFontScale(MathUtils.floor(create.getWidth()/create.getMinWidth()),
+                MathUtils.floor(create.getHeight()/create.getMinHeight()));
+
         create.addListener(new ClickListener() {
             @Override
             public void clicked (InputEvent event, float x, float y) {
                 //creating server
                 try {
-                    entryPoint.server = new ServerSocket(parseInt(textFieldEnterPort.getText()), 2);
-                    entryPoint.inviteToken = generateToken(getLocalHost().getHostAddress(),
+                    entryPoint.server = new ServerSocket(Integer.parseInt(textFieldEnterPort.getText()), 2);
+                    entryPoint.inviteToken = PreGameStartedUtils.generateToken(PreGameStartedUtils.getDeviceIP(),
                             entryPoint.server.getLocalPort());
                 } catch (IOException | IllegalArgumentException e) {
+                    e.printStackTrace();
                     return;
                 }
                 entryPoint.deviceState = SERVER;
@@ -150,11 +160,11 @@ public class CreateRoom implements Screen {
     }
 
     private void initInputLabel(){
-        textFieldEnterPort.setPosition((float) WIDTH/2 - 130, (float) HEIGHT/2 + 100);
         textFieldEnterPort.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT - 20);
+        textFieldEnterPort.setPosition((float) WIDTH/2 - textFieldEnterPort.getWidth()/2, (float) HEIGHT/2 + 100);
         textFieldEnterPort.setTextFieldFilter((textField, c) -> {
             try {
-                parseInt(valueOf(c));
+                Integer.parseInt(String.valueOf(c));
                 return true;
             }catch (NumberFormatException e){
                 return false;
@@ -163,7 +173,6 @@ public class CreateRoom implements Screen {
         textFieldEnterPort.setMaxLength(5);
         textFieldEnterPort.setAlignment(Align.center);
         if(input.isPeripheralAvailable(OnscreenKeyboard)) {
-            //TODO decide 2
             textFieldEnterPort.setOnscreenKeyboard(visible ->
                     input.setOnscreenKeyboardVisible(true, NumberPad));
         }

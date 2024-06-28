@@ -1,7 +1,5 @@
 package com.themarbles.game.networking;
 
-import com.themarbles.game.interfaces.Executable;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -28,7 +26,7 @@ public class Receiver {
             writer = new ObjectOutputStream(abstractSocket.getOutputStream());
             reader = new ObjectInputStream(abstractSocket.getInputStream());
         } catch (IOException e){
-            e.printStackTrace();
+            System.exit(5);
         }
     }
 
@@ -39,28 +37,19 @@ public class Receiver {
             writer.flush();
             writer.reset();
 
-        } catch (SocketException disconnected){
-            //TODO do smth
+        } catch (SocketException ignored){
+            // doing nothing if second player disconnected
         } catch (IOException e) {
-            System.exit(10);
+            System.exit(5);
         }
     }
 
     public DataPacket getData() {
         try {
             return (DataPacket) reader.readObject();
-        } catch (SocketException e){
-            System.exit(10);
-            return null;
         } catch (IOException | ClassNotFoundException e){
-            System.out.println(e.getMessage());
             return null;
         }
-    }
-
-    public void onDisconnect(Executable task){
-        System.out.println("executing: onDisconnect");
-        task.execute();
     }
 
     public void disable(){
@@ -69,7 +58,7 @@ public class Receiver {
             reader.close();
             writer.close();
         } catch (IOException e){
-            System.exit(1);
+            System.exit(5);
         }
 
     }

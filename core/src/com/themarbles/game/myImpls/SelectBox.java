@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Null;
 
 /**
- * Overwrites {@link com.badlogic.gdx.scenes.scene2d.ui.SelectBox}, adds {@link SelectBox#canBeFired} flag to avoid
+ * Overwrites {@link com.badlogic.gdx.scenes.scene2d.ui.SelectBox}, adds {@link SelectBox#canBeExecuted} flag to avoid
  * unwanted code execution in {@link com.themarbles.game.screens.Room}.
  * @see com.themarbles.game.screens.Room
  * @see com.badlogic.gdx.scenes.scene2d.ui.SelectBox
@@ -14,31 +14,31 @@ import com.badlogic.gdx.utils.Null;
 
 public class SelectBox<T> extends com.badlogic.gdx.scenes.scene2d.ui.SelectBox<T> {
 
-    private boolean canBeFired;
+    private boolean canBeExecuted;
 
     public SelectBox (Skin skin){
         super(skin);
-        canBeFired = true;
+        canBeExecuted = true;
     }
 
     @Override
     public void setItems (Array<T> newItems) {
-        canBeFired = false;
+        canBeExecuted = false;
         super.setItems(newItems);
     }
 
     @Override
     public @Null T getSelected () {
-        canBeFired = false;
+        canBeExecuted = false;
         return super.getSelected();
     }
 
-    public boolean getCanBeFired(){
-        return canBeFired;
+    public boolean getCanBeExecuted(){
+        return canBeExecuted;
     }
 
-    public void setCanBeFired(boolean canBeFired) {
-        this.canBeFired = canBeFired;
+    public void setCanBeExecuted(boolean canBeExecuted) {
+        this.canBeExecuted = canBeExecuted;
     }
 
 }

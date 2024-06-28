@@ -1,13 +1,14 @@
 package com.themarbles.game.utils;
 
-import static java.lang.Integer.parseInt;
-import static java.util.Base64.getDecoder;
-
 import com.badlogic.gdx.utils.StringBuilder;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Base64;
+import java.util.Enumeration;
 
-/** Util, using to encode/decode or separate invite token.
+/** Util, using to encode/decode, separate invite token and operations with ip.
  * @see com.themarbles.game.EntryPoint#inviteToken
  * **/
 
@@ -16,7 +17,7 @@ public class PreGameStartedUtils {
     public static String decodeToken(String token){
         // decodes an invite token to string, formatted ip:port
         StringBuilder builder = new StringBuilder();
-        Base64.Decoder decoder = getDecoder();
+        Base64.Decoder decoder = Base64.getDecoder();
         byte[] decoded_bytes = decoder.decode(token);
         for (byte b: decoded_bytes){
             builder.append((char) b);
@@ -31,7 +32,7 @@ public class PreGameStartedUtils {
 
     public static int getPort(String decodedToken){
         // splits decoded token and returns port
-        return parseInt(decodedToken.substring(decodedToken.indexOf(":") + 1));
+        return Integer.parseInt(decodedToken.substring(decodedToken.indexOf(":") + 1));
     }
 
     public static String generateToken(String host, int port){
@@ -39,5 +40,29 @@ public class PreGameStartedUtils {
         Base64.Encoder encoder = Base64.getEncoder();
         String orig = host + ":" + port;
         return encoder.encodeToString(orig.getBytes());
+    }
+
+    public static String getDeviceIP(){
+        // getting device-hosted server ip
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+
+                NetworkInterface networkInterface = en.nextElement();
+
+                for (Enumeration<InetAddress> address = networkInterface.getInetAddresses(); address.hasMoreElements();) {
+
+                    InetAddress inetAddress = address.nextElement();
+
+                    if (!inetAddress.isLoopbackAddress() &&
+                            !inetAddress.isLinkLocalAddress() &&
+                            inetAddress.isSiteLocalAddress()) {
+
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException ignored) {
+        }
+        return "127.0.0.1";
     }
 }
