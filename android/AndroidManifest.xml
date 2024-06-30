@@ -10,14 +10,14 @@
     <application
         android:allowBackup="true"
         android:fullBackupContent="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/tmg_icon"
         android:isGame="true"
         android:appCategory="game"
         android:label="@string/app_name"
-        tools:ignore="UnusedAttribute">
+        tools:ignore="UnusedAttribute"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name="com.themarbles.game.AndroidLauncher"
-            android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout"
             android:exported="true">

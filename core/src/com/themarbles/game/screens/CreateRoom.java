@@ -1,7 +1,9 @@
 package com.themarbles.game.screens;
 
+import static com.badlogic.gdx.Gdx.app;
 import static com.badlogic.gdx.Gdx.audio;
 import static com.badlogic.gdx.Gdx.files;
+
 import static com.badlogic.gdx.Gdx.input;
 import static com.badlogic.gdx.Input.OnscreenKeyboardType.NumberPad;
 import static com.badlogic.gdx.Input.Peripheral.OnscreenKeyboard;
@@ -15,7 +17,6 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.net.NetJavaImpl;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -28,10 +29,9 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.themarbles.game.EntryPoint;
 import com.themarbles.game.utils.PreGameStartedUtils;
+import com.themarbles.game.utils.ThreadFactory;
 
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
 
 /** Provides you a simple room creating menu.
@@ -49,6 +49,7 @@ public class CreateRoom implements Screen {
 
     private final Sound buttonPressedSound;
 
+
     public CreateRoom(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
         stage = new Stage(new ScalingViewport(Scaling.fill, WIDTH, HEIGHT));
@@ -59,7 +60,7 @@ public class CreateRoom implements Screen {
 
         create = new TextButton("CREATE", new Skin(files.internal("buttons/createbuttonassets/createbuttonskin.json")));
         cancel = new TextButton("CANCEL",new Skin(files.internal("buttons/cancelbuttonassets/cancelbuttonskin.json")));
-        textFieldEnterPort = new TextField("ENTER PORT:",new Skin(files.internal("labels/enterlabel/enterlabelskin.json")));
+        textFieldEnterPort = new TextField("PORT (1 - 65535):",new Skin(files.internal("labels/enterlabel/enterlabelskin.json")));
 
         initBackground();
         initCancelButton();
@@ -153,7 +154,10 @@ public class CreateRoom implements Screen {
                     return;
                 }
                 entryPoint.deviceState = SERVER;
+
                 buttonPressedSound.play();
+                entryPoint.menuMusic.stop();
+
                 entryPoint.setScreen(entryPoint.room);
             }
         });

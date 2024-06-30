@@ -52,6 +52,8 @@ public class MainMenu implements Screen {
 		initCreateButton();
 		initJoinButton();
 
+		entryPoint.menuMusic.play();
+
 	}
 
 

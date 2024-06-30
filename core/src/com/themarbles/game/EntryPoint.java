@@ -1,6 +1,11 @@
 package com.themarbles.game;
 
+import static com.badlogic.gdx.Gdx.audio;
+import static com.badlogic.gdx.Gdx.files;
+
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Null;
 import com.themarbles.game.constants.Constants;
@@ -28,6 +33,7 @@ import java.net.Socket;
     public Room room;
     public DefeatScreen defeatScreen;
     public VictoryScreen victoryScreen;
+    public Music menuMusic;
 
     public SpriteBatch batch;
 
@@ -47,6 +53,9 @@ import java.net.Socket;
     @SuppressWarnings("NewApi")
     @Override
     public void create() {
+        menuMusic = audio.newMusic(files.internal("sounds/menu_music.mp3"));
+        menuMusic.setVolume(0.15f);
+        menuMusic.setLooping(true);
 
         System.out.printf("[SYSTEM]: width: %d; height: %d\n", Constants.WIDTH, Constants.HEIGHT);
         mainMenu = new MainMenu(this);

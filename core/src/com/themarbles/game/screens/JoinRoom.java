@@ -61,7 +61,7 @@ public class JoinRoom implements Screen {
 
         join = new TextButton("JOIN", new Skin(files.internal("buttons/connectbuttonassets/connectbuttonskin.json")));
         cancel = new TextButton("CANCEL",new Skin(files.internal("buttons/cancelbuttonassets/cancelbuttonskin.json")));
-        textFieldEnterToken = new TextField("ENTER TOKEN:",new Skin(files.internal("labels/enterlabel/enterlabelskin.json")));
+        textFieldEnterToken = new TextField("TOKEN:",new Skin(files.internal("labels/enterlabel/enterlabelskin.json")));
         textFieldTokenLabel = new Label("(TRIPLE CLICK TO PASTE)", new Skin(files.internal("labels/entertokenlabel/entertokenlabelskin.json")));
 
         initBackground();
@@ -162,7 +162,10 @@ public class JoinRoom implements Screen {
                     return;
                 }
                 entryPoint.deviceState = CLIENT;
+
                 buttonPressedSound.play();
+                entryPoint.menuMusic.stop();
+
                 entryPoint.setScreen(entryPoint.room);
             }
         });
