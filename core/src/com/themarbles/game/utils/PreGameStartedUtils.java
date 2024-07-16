@@ -63,6 +63,7 @@ public class PreGameStartedUtils {
             }
         } catch (SocketException ignored) {
         }
+
         return "127.0.0.1";
     }
 }

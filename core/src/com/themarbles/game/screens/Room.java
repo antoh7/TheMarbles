@@ -422,16 +422,18 @@ public class Room implements Screen {
     private void initTokenArea() {
         String text = entryPoint.inviteToken;
 
-        tokenArea.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT - 20);
+        tokenArea.setDebug(true);
+
+        tokenArea.setSize((float) WIDTH/2, WIDGET_PREFERRED_HEIGHT - 20);
         tokenArea.setPosition((float) WIDTH/2 - tokenArea.getWidth()/2,
                 (float) HEIGHT/2 - tokenArea.getHeight()*2 - 30);
 
+        tokenArea.setAlignment(center);
+
         tokenArea.setText(text);
 
-        tokenArea.setFontScale(MathUtils.floor(tokenArea.getWidth()/ tokenArea.getMinWidth()),
-                MathUtils.floor(tokenArea.getHeight()/ tokenArea.getMinHeight()));
-
-        tokenArea.setAlignment(left);
+        tokenArea.setFontScale(MathUtils.ceil(tokenArea.getWidth()/ tokenArea.getMinWidth()),
+                MathUtils.ceil(tokenArea.getHeight()/ tokenArea.getMinHeight()));
 
         tokenArea.addListener(new ClickListener() {
             @Override
@@ -449,12 +451,12 @@ public class Room implements Screen {
         tokenLabel.setPosition((float) WIDTH/2 - tokenLabel.getWidth()/2,
                 (float) HEIGHT/2 - tokenLabel.getHeight()*2 - 50 - tokenLabel.getHeight());
 
+        tokenLabel.setAlignment(center);
+
         tokenLabel.setText(text);
 
-        tokenLabel.setFontScale(MathUtils.floor(tokenLabel.getWidth()/ tokenLabel.getMinWidth()),
-                MathUtils.floor(tokenLabel.getHeight()/ tokenLabel.getMinHeight()));
-
-        tokenLabel.setAlignment(left);
+        tokenLabel.setFontScale(MathUtils.ceil(tokenLabel.getWidth()/ tokenLabel.getMinWidth()),
+                MathUtils.ceil(tokenLabel.getHeight()/ tokenLabel.getMinHeight()));
 
     }
 
@@ -522,7 +524,7 @@ public class Room implements Screen {
 
         statementSelection.getStyle().listStyle.selection.setBottomHeight(MathUtils.floor((float) (HEIGHT/4) / 2));
 
-        statementSelection.setItems(Array.with("ODD", "EVEN"));
+        statementSelection.setItems(Array.with(ODD, EVEN));
         statementSelection.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {

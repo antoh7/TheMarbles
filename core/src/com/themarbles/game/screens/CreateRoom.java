@@ -147,7 +147,8 @@ public class CreateRoom implements Screen {
                 //creating server
                 try {
                     entryPoint.server = new ServerSocket(Integer.parseInt(textFieldEnterPort.getText()), 2);
-                    entryPoint.inviteToken = PreGameStartedUtils.generateToken(PreGameStartedUtils.getDeviceIP(),
+                    entryPoint.inviteToken = PreGameStartedUtils.getDeviceIP().equals("127.0.0.1")?"NO WIFI CONNECTION!":
+                            PreGameStartedUtils.generateToken(PreGameStartedUtils.getDeviceIP(),
                             entryPoint.server.getLocalPort());
                 } catch (IOException | IllegalArgumentException e) {
                     e.printStackTrace();
