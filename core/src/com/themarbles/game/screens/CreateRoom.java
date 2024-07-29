@@ -1,9 +1,7 @@
 package com.themarbles.game.screens;
 
-import static com.badlogic.gdx.Gdx.app;
 import static com.badlogic.gdx.Gdx.audio;
 import static com.badlogic.gdx.Gdx.files;
-
 import static com.badlogic.gdx.Gdx.input;
 import static com.badlogic.gdx.Input.OnscreenKeyboardType.NumberPad;
 import static com.badlogic.gdx.Input.Peripheral.OnscreenKeyboard;
@@ -29,7 +27,6 @@ import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.themarbles.game.EntryPoint;
 import com.themarbles.game.utils.PreGameStartedUtils;
-import com.themarbles.game.utils.ThreadFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -147,7 +144,10 @@ public class CreateRoom implements Screen {
                 //creating server
                 try {
                     entryPoint.server = new ServerSocket(Integer.parseInt(textFieldEnterPort.getText()), 2);
-                    entryPoint.inviteToken = PreGameStartedUtils.getDeviceIP().equals("127.0.0.1")?"NO WIFI CONNECTION!":
+                    entryPoint.inviteToken = PreGameStartedUtils
+                            .getDeviceIP()
+                            .equals("127.0.0.1")?
+                            "NO WI-FI CONNECTION!":
                             PreGameStartedUtils.generateToken(PreGameStartedUtils.getDeviceIP(),
                             entryPoint.server.getLocalPort());
                 } catch (IOException | IllegalArgumentException e) {

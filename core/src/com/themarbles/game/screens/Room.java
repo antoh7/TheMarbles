@@ -5,7 +5,6 @@ import static com.badlogic.gdx.Gdx.audio;
 import static com.badlogic.gdx.Gdx.files;
 import static com.badlogic.gdx.Gdx.input;
 import static com.badlogic.gdx.utils.Align.center;
-import static com.badlogic.gdx.utils.Align.left;
 import static com.themarbles.game.constants.Constants.EVEN;
 import static com.themarbles.game.constants.Constants.GAME_FINISHED;
 import static com.themarbles.game.constants.Constants.GAME_RUNNING;
@@ -79,12 +78,12 @@ public class Room implements Screen {
     private final Label tokenArea;
     private final Label tokenLabel;
     private final GlyphLayout marblesAmountLayout, turnLayout;
+    private final Player we, opponent;
 
     private Map<Integer, SerializableImage> opponentHandInstances;
     private Map<Integer, SerializableImage> ourHandInstances;
     private Map<Integer, Sound> marblesHittingSounds;
     private Map<Integer, Sound> givingMarblesAwaySounds;
-    private Player we, opponent;
     private String game_state;
     private Receiver receiver;
     private boolean ourTurn, endOfStage,weReady, opponentReady;

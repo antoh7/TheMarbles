@@ -13,8 +13,7 @@ public class DesktopLauncher {
 		config.setForegroundFPS(60);
 		config.setTitle("The Marbles");
 		config.setResizable(false);
-		config.setWindowedMode(1366, 1080);
-		//config.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode());
+		config.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode());
 
 		new Lwjgl3Application(new EntryPoint(), config);
 	}

@@ -57,7 +57,6 @@ import java.net.Socket;
         menuMusic.setVolume(0.15f);
         menuMusic.setLooping(true);
 
-        System.out.printf("[SYSTEM]: width: %d; height: %d\n", Constants.WIDTH, Constants.HEIGHT);
         mainMenu = new MainMenu(this);
         joinRoom = new JoinRoom(this);
         createRoom = new CreateRoom(this);
