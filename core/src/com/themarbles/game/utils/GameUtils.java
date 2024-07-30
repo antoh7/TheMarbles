@@ -4,7 +4,6 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 
 /** Util, using while game is running.
  * @see Actor
@@ -12,7 +11,7 @@ import java.util.stream.IntStream;
  * @see Array
  * **/
 
-public class GameUtils {
+public class  GameUtils {
 
     public static void setActorVisualProps(Actor actor, boolean visible){
         // makes actor visible/invisible
@@ -40,10 +39,9 @@ public class GameUtils {
     public static Array<Integer> computeBetsRange(int start, int end) {
         // calculates max available marbles amount,
         // which can be a bet
-        int[] intArray = IntStream.rangeClosed(start, end).toArray();
         Array<Integer> integerArray = new Array<>();
-        for (int element: intArray) {
-            integerArray.add(element);
+        for (int i = start; i <= end; i++) {
+            integerArray.add(i);
         }
         return integerArray;
     }

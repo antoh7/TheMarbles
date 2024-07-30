@@ -1,27 +1,24 @@
 package com.themarbles.game;
 
+import com.badlogic.gdx.utils.Array;
 import com.themarbles.game.screens.Room;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /** Class for testing **/
 
 public class TestClass {
 
-    static Room room;
-    static EntryPoint entryPoint;
-
-    public TestClass() {
-        entryPoint = new EntryPoint();
-    }
-
     public static void main(String[] args) throws InterruptedException {
 
-        Thread thread1 = new Thread(() -> {
-            room = new Room(entryPoint);
-        });
+        int[] array = new int[10];
+        Array<Integer> integerArray = new Array<>();
+        for (int i = 1; i <= 9; i++) {
+            integerArray.add(i);
+            System.out.println(i);
+        }
 
-        thread1.start();
     }
 
 }

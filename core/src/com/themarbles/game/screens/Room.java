@@ -421,8 +421,6 @@ public class Room implements Screen {
     private void initTokenArea() {
         String text = entryPoint.inviteToken;
 
-        tokenArea.setDebug(true);
-
         tokenArea.setSize((float) WIDTH/2, WIDGET_PREFERRED_HEIGHT - 20);
         tokenArea.setPosition((float) WIDTH/2 - tokenArea.getWidth()/2,
                 (float) HEIGHT/2 - tokenArea.getHeight()*2 - 30);
@@ -498,8 +496,8 @@ public class Room implements Screen {
 
                     receiver.sendData(new DataPacket(game_state, ourTurn, weReady, we));
 
-                     betMadeSound.play();
-                     return;
+                    betMadeSound.play();
+                    return;
                 }
 
                 marblesHittingSounds.get(MathUtils.random(0, marblesHittingSounds.size() - 1)).play();
@@ -552,8 +550,8 @@ public class Room implements Screen {
         opponentHandInstances = new HashMap<>();
         ourHandInstances = new HashMap<>();
         for(int i = 0; i < 11; i++){
-            opponentHandInstances.put(i, new SerializableImage(new Texture(files.internal("textures/op_h_%d_o.png".formatted(i)))));
-            ourHandInstances.put(i, new SerializableImage(new Texture(files.internal("textures/ou_h_%d_o.png".formatted(i)))));
+            opponentHandInstances.put(i, new SerializableImage(new Texture(files.internal("textures/op_h_" + i + "_o.png"))));
+            ourHandInstances.put(i, new SerializableImage(new Texture(files.internal("textures/ou_h_" + i + "_o.png"))));
         }
     }
 
@@ -562,8 +560,8 @@ public class Room implements Screen {
         givingMarblesAwaySounds = new HashMap<>();
 
         for(int i = 0; i < 3; i++){
-            marblesHittingSounds.put(i, audio.newSound(files.internal("sounds/marbles_hitting_%d.mp3".formatted(i))));
-            givingMarblesAwaySounds.put(i, audio.newSound(files.internal("sounds/giving_marbles_away_%d.mp3".formatted(i))));
+            marblesHittingSounds.put(i, audio.newSound(files.internal("sounds/marbles_hitting_" + i + ".mp3")));
+            givingMarblesAwaySounds.put(i, audio.newSound(files.internal("sounds/giving_marbles_away_" + i + ".mp3")));
 
         }
     }

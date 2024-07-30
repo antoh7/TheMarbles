@@ -52,8 +52,6 @@ public class MainMenu implements Screen {
 		initCreateButton();
 		initJoinButton();
 
-		entryPoint.menuMusic.play();
-
 	}
 
 
@@ -65,6 +63,8 @@ public class MainMenu implements Screen {
 		stage.addActor(createButton);
 
 		input.setInputProcessor(stage);
+
+		entryPoint.menuMusic.play();
 
 	}
 
