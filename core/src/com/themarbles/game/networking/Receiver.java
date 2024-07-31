@@ -37,7 +37,7 @@ public class Receiver {
             writer.flush();
             writer.reset();
 
-        } catch (SocketException ignored){
+        } catch (SocketException ignore){
             // doing nothing if second player disconnected
         } catch (IOException e) {
             System.exit(5);

@@ -153,7 +153,6 @@ public class Room implements Screen {
         stage.addActor(statementSelection);
 
         if (entryPoint.deviceState.equals(SERVER)) {
-            stage.addActor(startButton);
             stage.addActor(tokenLabel);
             stage.addActor(tokenArea);
         }
@@ -239,6 +238,7 @@ public class Room implements Screen {
     private void initAcceptingThread(){
         try {
             entryPoint.client = entryPoint.server.accept();
+            stage.addActor(startButton);
         } catch (NullPointerException ignore){
         } catch (IOException e) {
             System.exit(5);
@@ -356,7 +356,6 @@ public class Room implements Screen {
                         }
                         ourMarblesAmountOnHand = ourBet + opponentBet;
                         opponentMarblesAmountOnHand = opponentBet - ourBet;
-
                     } else {
 
                         if (ourBet <= opponentBet) {
@@ -643,12 +642,12 @@ public class Room implements Screen {
         opponent.setStatement(null);
 
         receiver.disable();
-        if(entryPoint.deviceState.equals(SERVER)){
-            try {
-                entryPoint.server.close();
-            } catch (IOException e) {
-                System.exit(5);
-            }
+
+        try {
+            entryPoint.server.close();
+        } catch (NullPointerException ignore) {
+        } catch (IOException e) {
+            System.exit(5);
         }
 
         try {
@@ -658,5 +657,5 @@ public class Room implements Screen {
         }
 
     }
-    
+
 }
