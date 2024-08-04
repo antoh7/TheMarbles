@@ -7,7 +7,7 @@ repeat: none
 font
   rotate: false
   xy: 1, 1
-  size: 512, 512
-  orig: 512, 512
+  size: 505, 48
+  orig: 505, 48
   offset: 0, 0
   index: -1

@@ -10,14 +10,17 @@ import java.util.concurrent.TimeUnit;
 
 public class TestClass {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
 
-        int[] array = new int[10];
-        Array<Integer> integerArray = new Array<>();
-        for (int i = 1; i <= 9; i++) {
-            integerArray.add(i);
-            System.out.println(i);
+        String str = "255.255.0.255:8080";
+        StringBuilder builder = new StringBuilder();
+        byte[] bytes_str = str.getBytes();
+        System.out.println(Arrays.toString(bytes_str));
+        for(byte b: bytes_str) {
+            builder.append(Integer.toHexString(b));
         }
+        System.out.println(builder.toString());
+
 
     }
 

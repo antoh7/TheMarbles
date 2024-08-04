@@ -23,15 +23,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.themarbles.game.EntryPoint;
 import com.themarbles.game.utils.PreGameStartedUtils;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 
-/** Provides you a simple room creating menu.
+/** Provides a simple room creating menu.
  * @see Screen
  * @see Room
  * **/
@@ -49,15 +47,15 @@ public class CreateRoom implements Screen {
 
     public CreateRoom(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
-        stage = new Stage(new ScalingViewport(Scaling.fill, WIDTH, HEIGHT));
+        stage = new Stage();
 
         background = new Image(new Texture(files.internal("textures/createroom_menu_background.jpg")));
 
         buttonPressedSound = audio.newSound(files.internal("sounds/button_pressed.mp3"));
 
-        create = new TextButton("CREATE", new Skin(files.internal("buttons/createbuttonassets/createbuttonskin.json")));
-        cancel = new TextButton("CANCEL",new Skin(files.internal("buttons/cancelbuttonassets/cancelbuttonskin.json")));
-        textFieldEnterPort = new TextField("PORT (1 - 65535):",new Skin(files.internal("labels/enterlabel/enterlabelskin.json")));
+        create = new TextButton("СОЗДАТЬ", new Skin(files.internal("buttons/createbuttonassets/createbuttonskin.json")));
+        cancel = new TextButton("ОТМЕНА",new Skin(files.internal("buttons/cancelbuttonassets/cancelbuttonskin.json")));
+        textFieldEnterPort = new TextField("ПОРТ (1 - 65535):",new Skin(files.internal("labels/enterlabel/enterlabelskin.json")));
 
         initBackground();
         initCancelButton();
@@ -144,14 +142,10 @@ public class CreateRoom implements Screen {
                 //creating server
                 try {
                     entryPoint.server = new ServerSocket(Integer.parseInt(textFieldEnterPort.getText()), 2);
-                    entryPoint.inviteToken = PreGameStartedUtils
-                            .getDeviceIP()
-                            .equals("127.0.0.1")?
-                            "NO WI-FI CONNECTION!":
-                            PreGameStartedUtils.generateToken(PreGameStartedUtils.getDeviceIP(),
-                            entryPoint.server.getLocalPort());
+                    String ip = PreGameStartedUtils.getDeviceIP();
+                    entryPoint.inviteToken = ip.equals("127.0.0.1")?"NO WI-FI CONNECTION!":
+                            PreGameStartedUtils.generateToken(ip, entryPoint.server.getLocalPort());
                 } catch (IOException | IllegalArgumentException e) {
-                    e.printStackTrace();
                     return;
                 }
                 entryPoint.deviceState = SERVER;

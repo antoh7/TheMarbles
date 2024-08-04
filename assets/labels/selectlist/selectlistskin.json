@@ -1,6 +1,6 @@
 {
 "com.badlogic.gdx.graphics.g2d.BitmapFont": {
-	"list_style_font": {
+	"list_font": {
 		"file": "font.fnt",
 		"scaledSize": -1,
 		"markupEnabled": false,
@@ -8,56 +8,56 @@
 	}
 },
 "com.badlogic.gdx.graphics.Color": {
-	"list_style_font_color_selected": {
+	"list_font_color": {
 		"r": 0,
 		"g": 0,
 		"b": 0,
 		"a": 1
 	},
-	"list_style_selection_color": {
-		"r": 0.59607846,
-		"g": 0.95686275,
-		"b": 0.8352941,
+	"list_selection_color": {
+		"r": 0.31764707,
+		"g": 0.9098039,
+		"b": 0.70980394,
 		"a": 1
 	},
-	"scrollbar_background_color": {
-		"r": 0.75686276,
-		"g": 0.7411765,
-		"b": 0.6573034,
-		"a": 0.4775281
+	"scroll_background_color": {
+		"r": 0.827451,
+		"g": 0.8039216,
+		"b": 0.7607843,
+		"a": 1
 	}
 },
 "com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable": {
-	"list_style_selection": {
+	"list_selection": {
 		"name": "white-pixel",
-		"color": "list_style_selection_color",
+		"color": "list_selection_color",
 		"minWidth": 150,
 		"minHeight": 50
 	},
-	"scrollbar_background": {
+	"scroll_background": {
 		"name": "white-pixel",
-		"color": "scrollbar_background_color",
+		"color": "scroll_background_color",
 		"minWidth": 150,
 		"minHeight": 50
 	}
 },
 "com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle": {
 	"default": {
-		"font": "list_style_font",
-		"fontColorSelected": "list_style_font_color_selected",
-		"fontColorUnselected": "list_style_font_color_selected",
-		"selection": "list_style_selection"
+		"font": "list_font",
+		"fontColorSelected": "list_font_color",
+		"fontColorUnselected": "list_font_color",
+		"selection": "list_selection"
 	}
 },
 "com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle": {
 	"default": {
-		"background": "scrollbar_background"
+		"background": "scroll_background"
 	}
 },
 "com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle": {
 	"default": {
-		"font": "list_style_font",
-		"fontColor": "list_style_font_color_selected",
+		"font": "list_font",
+		"fontColor": "list_font_color",
 		"background": "background",
 		"scrollStyle": "default",
 		"listStyle": "default"

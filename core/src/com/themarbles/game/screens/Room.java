@@ -5,6 +5,7 @@ import static com.badlogic.gdx.Gdx.audio;
 import static com.badlogic.gdx.Gdx.files;
 import static com.badlogic.gdx.Gdx.input;
 import static com.badlogic.gdx.utils.Align.center;
+import static com.themarbles.game.constants.Constants.CHARACTERS;
 import static com.themarbles.game.constants.Constants.EVEN;
 import static com.themarbles.game.constants.Constants.GAME_FINISHED;
 import static com.themarbles.game.constants.Constants.GAME_RUNNING;
@@ -36,8 +37,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.themarbles.game.EntryPoint;
 import com.themarbles.game.Player;
 import com.themarbles.game.myImpls.SelectBox;
@@ -52,7 +51,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-/** represents main game logic, working in multithreaded mode, contains sound, texture, player instances.
+/** Main game class working in multithreaded mode, all events occur here, contains sounds, textures, player instances.
  * @see Screen
  * @see SerializableImage
  * @see Player
@@ -91,7 +90,7 @@ public class Room implements Screen {
     public Room(EntryPoint entryPoint){
         this.entryPoint = entryPoint;
 
-        stage = new Stage(new ScalingViewport(Scaling.fill, WIDTH, HEIGHT));
+        stage = new Stage();
 
         game_state = WAITING_FOR_PLAYER_CONNECT;
 
@@ -105,14 +104,14 @@ public class Room implements Screen {
         threadFactory.createAndAdd(this::initNetUpdateListener, "net_update_listener_thread", true);
         threadFactory.createAndAdd(this::initEventUpdateManager, "event_update_manager_thread", true);
 
-        indicatorFont = FontGenerator.generateFont(files.internal("fonts/indicatorFont.ttf"), 80, Color.ROYAL);
+        indicatorFont = FontGenerator.generateFont(files.internal("fonts/indicatorFont.ttf"), 80, Color.ROYAL, CHARACTERS);
 
         marblesAmountLayout = new GlyphLayout();
         turnLayout = new GlyphLayout();
 
-        startButton = new TextButton("START", new Skin(files.internal("buttons/startbuttonassets/startbuttonskin.json")));
-        betSelection = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlist.json")));
-        statementSelection = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlist.json")));
+        startButton = new TextButton("НАЧАТЬ", new Skin(files.internal("buttons/startbuttonassets/startbuttonskin.json")));
+        betSelection = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlistskin.json")));
+        statementSelection = new SelectBox<>(new Skin(files.internal("labels/selectlist/selectlistskin.json")));
 
         tokenArea = new Label("", new Skin(files.internal("labels/tokenlabel/tokenlabelskin.json")));
         tokenLabel = new Label("", new Skin(files.internal("labels/tokenlabel/tokenlabelskin.json")));
@@ -174,10 +173,10 @@ public class Room implements Screen {
             String text;
 
             synchronized (this) {
-                text = ourTurn ? "Turn: yours" : "Turn: opponent`s";
+                text = ourTurn ? "Твой ход" : "Ход соперника";
             }
 
-            marblesAmountLayout.setText(indicatorFont, "marbles: " + we.getMarblesAmount());
+            marblesAmountLayout.setText(indicatorFont, "Шары: " + we.getMarblesAmount());
             turnLayout.setText(indicatorFont, text);
 
             indicatorFont.draw(entryPoint.batch, turnLayout, (float) WIDTH/6 - turnLayout.width/2, turnLayout.height + 10);
@@ -265,8 +264,8 @@ public class Room implements Screen {
 
             synchronized (this) {
                 game_state = currPacket.getGameState();
-                ourTurn = !currPacket.getTurnOrder();
                 opponentReady = currPacket.getPlayerReady();
+                ourTurn = !currPacket.getTurnOrder();
             }
         }
     }
@@ -319,24 +318,30 @@ public class Room implements Screen {
                         if (ourBet <= opponentBet) {
                             opponent.setMarblesAmount(opponentMarblesAmount + ourBet);
                             we.setMarblesAmount(ourMarblesAmount - ourBet);
+
+                            opponentMarblesAmountOnHand = opponentBet + ourBet;
                         } else {
                             opponent.setMarblesAmount(opponentMarblesAmount + opponentBet);
                             we.setMarblesAmount(ourMarblesAmount - opponentBet);
+
+                            ourMarblesAmountOnHand = ourBet - opponentBet;
+                            opponentMarblesAmountOnHand = opponentBet*2;
                         }
-                        ourMarblesAmountOnHand = ourBet - opponentBet;
-                        opponentMarblesAmountOnHand = opponentBet + ourBet;
 
                     } else{
 
                         if (ourBet <= opponentBet) {
                             we.setMarblesAmount(ourMarblesAmount + ourBet);
                             opponent.setMarblesAmount(opponentMarblesAmount - ourBet);
+
+                            ourMarblesAmountOnHand = ourBet*2;
+                            opponentMarblesAmountOnHand = opponentBet - ourBet;
                         } else {
                             we.setMarblesAmount(ourMarblesAmount + opponentBet);
                             opponent.setMarblesAmount(opponentMarblesAmount - opponentBet);
+
+                            ourMarblesAmountOnHand = ourBet + opponentBet;
                         }
-                        ourMarblesAmountOnHand = ourBet + opponentBet;
-                        opponentMarblesAmountOnHand = opponentBet - ourBet;
 
                     }
                 }
@@ -350,23 +355,32 @@ public class Room implements Screen {
                         if (ourBet <= opponentBet) {
                             we.setMarblesAmount(ourMarblesAmount + ourBet);
                             opponent.setMarblesAmount(opponentMarblesAmount - ourBet);
+
+                            ourMarblesAmountOnHand = ourBet*2;
+                            opponentMarblesAmountOnHand = opponentBet - ourBet;
                         } else {
                             we.setMarblesAmount(ourMarblesAmount + opponentBet);
                             opponent.setMarblesAmount(opponentMarblesAmount - opponentBet);
+
+                            ourMarblesAmountOnHand = ourBet + opponentBet;
+                            opponentMarblesAmountOnHand = 0;
                         }
-                        ourMarblesAmountOnHand = ourBet + opponentBet;
-                        opponentMarblesAmountOnHand = opponentBet - ourBet;
+
                     } else {
 
                         if (ourBet <= opponentBet) {
                             we.setMarblesAmount(ourMarblesAmount - ourBet);
                             opponent.setMarblesAmount(opponentMarblesAmount + ourBet);
+
+                            ourMarblesAmountOnHand = 0;
+                            opponentMarblesAmountOnHand = opponentBet + ourBet;
                         } else {
                             we.setMarblesAmount(ourMarblesAmount - opponentBet);
                             opponent.setMarblesAmount(opponentMarblesAmount + opponentBet);
+
+                            ourMarblesAmountOnHand = ourBet - opponentBet;
+                            opponentMarblesAmountOnHand = opponentBet*2;
                         }
-                        ourMarblesAmountOnHand = ourBet - opponentBet;
-                        opponentMarblesAmountOnHand = opponentBet + ourBet;
 
                     }
                 }
@@ -435,13 +449,13 @@ public class Room implements Screen {
             @Override
             public void clicked (InputEvent event, float x, float y) {
                 app.getClipboard().setContents(tokenArea.getText().toString());
-                tokenLabel.setText("TOKEN COPIED!");
+                tokenLabel.setText("ТОКЕН СКОПИРОВАН");
             }
         });
     }
 
     private void initTokenLabel() {
-        String text = "(CLICK TOKEN TO COPY)";
+        String text = "(КЛИК ЧТОБЫ СКОПИРОВАТЬ)";
 
         tokenLabel.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT - 20);
         tokenLabel.setPosition((float) WIDTH/2 - tokenLabel.getWidth()/2,

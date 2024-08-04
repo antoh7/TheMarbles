@@ -3,6 +3,7 @@ package com.themarbles.game.screens;
 import static com.badlogic.gdx.Gdx.audio;
 import static com.badlogic.gdx.Gdx.files;
 import static com.badlogic.gdx.Gdx.input;
+import static com.themarbles.game.constants.Constants.CHARACTERS;
 import static com.themarbles.game.constants.Constants.HEIGHT;
 import static com.themarbles.game.constants.Constants.WIDTH;
 
@@ -12,14 +13,13 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.themarbles.game.EntryPoint;
 import com.themarbles.game.constants.Constants;
 import com.themarbles.game.utils.FontGenerator;
@@ -41,13 +41,13 @@ public class DefeatScreen implements Screen {
     public DefeatScreen(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
 
-        stage = new Stage(new ScalingViewport(Scaling.fill, WIDTH, HEIGHT));
+        stage = new Stage();
 
         background = new Image(new Texture(files.internal("textures/defeat.jpg")));
-        exit = new TextButton("EXIT", new Skin(files.internal("buttons/restartbuttonassets/restartbuttonskin.json")));
-        defeatFont = FontGenerator.generateFont(files.internal("fonts/defeatFont.otf"), 160, Color.FIREBRICK);
+        exit = new TextButton("ВЫЙТИ", new Skin(files.internal("buttons/exitbuttonassets/exitbuttonskin.json")));
+        defeatFont = FontGenerator.generateFont(files.internal("fonts/defeatFont.otf"), 160, Color.FIREBRICK, CHARACTERS);
 
-        defeatLayout = new GlyphLayout(defeatFont, "YOU LOSE!");
+        defeatLayout = new GlyphLayout(defeatFont, "ТЫ ПРОИГРАЛ!");
 
         defeatSound = audio.newSound(files.internal("sounds/defeat_sound.wav"));
 
@@ -113,6 +113,10 @@ public class DefeatScreen implements Screen {
         exit.setSize(Constants.WIDGET_PREFERRED_WIDTH + 20, Constants.WIDGET_PREFERRED_HEIGHT + 10);
         exit.setPosition((float) WIDTH/2 - exit.getWidth() / 2,
                 (float) HEIGHT/2 - exit.getHeight() / 2);
+
+        exit.getLabel().setFontScale(MathUtils.floor(exit.getWidth()/exit.getMinWidth()),
+                MathUtils.floor(exit.getHeight()/exit.getMinHeight()));
+
         exit.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {

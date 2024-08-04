@@ -5,7 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 import java.io.Serializable;
 
-/** Overwrites {@link com.badlogic.gdx.scenes.scene2d.ui.Image}, making it serializable.
+/** Overwrites {@link com.badlogic.gdx.scenes.scene2d.ui.Image}, makes it serializable.
  * @see Image
  * @see Serializable
  * **/

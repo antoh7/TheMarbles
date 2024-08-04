@@ -33,7 +33,9 @@ public class Constants {
     public static final String GAME_FINISHED = "GAME_FINISHED";
 
     //statements
-    public static final String EVEN = "EVEN";
-    public static final String ODD = "ODD";
+    public static final String EVEN = "ЧЁТНОЕ";
+    public static final String ODD = "НЕЧЁТНОЕ";
+
+    public static String CHARACTERS = "абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!:0123456789";
 
 }

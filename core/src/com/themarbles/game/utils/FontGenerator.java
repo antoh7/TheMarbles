@@ -7,13 +7,13 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 
-/** Util, using for generating {@link com.badlogic.gdx.graphics.g2d.BitmapFont}
+/** Util, using to generate custom {@link com.badlogic.gdx.graphics.g2d.BitmapFont}.
  * @see BitmapFont
  */
 
 public class FontGenerator {
 
-    public static BitmapFont generateFont(FileHandle pathToFont, int size, Color color){
+    public static BitmapFont generateFont(FileHandle pathToFont, int size, Color color, String characters){
 
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(pathToFont);
         FreeTypeFontParameter parameter = new FreeTypeFontParameter();
@@ -21,6 +21,7 @@ public class FontGenerator {
 
         parameter.size = size;
         parameter.color = color;
+        parameter.characters = characters;
 
         font = generator.generateFont(parameter);
 

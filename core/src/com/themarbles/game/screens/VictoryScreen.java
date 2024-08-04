@@ -1,9 +1,9 @@
 package com.themarbles.game.screens;
 
-import static com.badlogic.gdx.Gdx.app;
 import static com.badlogic.gdx.Gdx.audio;
 import static com.badlogic.gdx.Gdx.files;
 import static com.badlogic.gdx.Gdx.input;
+import static com.themarbles.game.constants.Constants.CHARACTERS;
 import static com.themarbles.game.constants.Constants.HEIGHT;
 import static com.themarbles.game.constants.Constants.WIDTH;
 
@@ -13,19 +13,18 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.themarbles.game.EntryPoint;
 import com.themarbles.game.constants.Constants;
 import com.themarbles.game.utils.FontGenerator;
 
-/** Activates if opponent lost all its marbles (you win)
+/** Activates if opponent lost all his marbles (you won).
  * @see Screen
  * **/
 
@@ -42,16 +41,13 @@ public class VictoryScreen implements Screen {
     public VictoryScreen(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
 
-        stage = new Stage(new ScalingViewport(Scaling.fill, WIDTH, HEIGHT));
+        stage = new Stage();
 
         background = new Image(new Texture(files.internal("textures/victory.jpg")));
-        exit = new TextButton("EXIT", new Skin(files.internal("buttons/restartbuttonassets/restartbuttonskin.json")));
-        victoryFont = FontGenerator.generateFont(files.internal("fonts/victoryFont.ttf"), 80, Color.CYAN);
+        exit = new TextButton("ВЫЙТИ", new Skin(files.internal("buttons/exitbuttonassets/exitbuttonskin.json")));
+        victoryFont = FontGenerator.generateFont(files.internal("fonts/victoryFont.ttf"), 160, Color.CYAN, CHARACTERS);
 
-        victoryLayout = new GlyphLayout(victoryFont, """
-                                           CONGRATULATIONS!
-                                               YOU WON!
-                                           """);
+        victoryLayout = new GlyphLayout(victoryFont, "ПОБЕДА!");
 
         victorySound = audio.newSound(files.internal("sounds/victory_sound.wav"));
 
@@ -80,7 +76,7 @@ public class VictoryScreen implements Screen {
         entryPoint.batch.begin();
 
         victoryFont.draw(entryPoint.batch, victoryLayout, (float) WIDTH/2 - victoryLayout.width/2,
-                (float) HEIGHT/2 + victoryLayout.height);
+                (float) HEIGHT/2 + victoryLayout.height*2);
 
         entryPoint.batch.end();
     }
@@ -118,6 +114,9 @@ public class VictoryScreen implements Screen {
         exit.setSize(Constants.WIDGET_PREFERRED_WIDTH + 20, Constants.WIDGET_PREFERRED_HEIGHT + 10);
         exit.setPosition((float) WIDTH/2 - exit.getWidth() / 2,
                 (float) HEIGHT/2 - exit.getHeight() / 2);
+
+        exit.getLabel().setFontScale(MathUtils.floor(exit.getWidth()/exit.getMinWidth()),
+                MathUtils.floor(exit.getHeight()/exit.getMinHeight()));
         exit.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {

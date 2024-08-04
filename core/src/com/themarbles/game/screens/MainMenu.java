@@ -45,8 +45,8 @@ public class MainMenu implements Screen {
 
 		buttonPressedSound = audio.newSound(files.internal("sounds/button_pressed.mp3"));
 
-		joinButton = new TextButton("JOIN ROOM", new Skin(files.internal("buttons/connectbuttonassets/connectbuttonskin.json")));
-		createButton = new TextButton("CREATE ROOM",new Skin(files.internal("buttons/createbuttonassets/createbuttonskin.json")));
+		joinButton = new TextButton("ЗАЙТИ", new Skin(files.internal("buttons/connectbuttonassets/connectbuttonskin.json")));
+		createButton = new TextButton("СОЗДАТЬ",new Skin(files.internal("buttons/createbuttonassets/createbuttonskin.json")));
 
 		initBackground();
 		initCreateButton();

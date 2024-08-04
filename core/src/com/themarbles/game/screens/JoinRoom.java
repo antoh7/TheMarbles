@@ -25,15 +25,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.themarbles.game.EntryPoint;
 import com.themarbles.game.utils.PreGameStartedUtils;
 
 import java.io.IOException;
 import java.net.Socket;
 
-/** Provides you a simple joining room menu.
+/** Provides a simple joining room menu.
  * @see Screen
  * @see Room
  * **/
@@ -53,16 +51,16 @@ public class JoinRoom implements Screen {
     public JoinRoom(EntryPoint entryPoint) {
         this.entryPoint = entryPoint;
 
-        stage = new Stage(new ScalingViewport(Scaling.fill, WIDTH, HEIGHT));
+        stage = new Stage();
 
         background = new Image(new Texture(files.internal("textures/joinroom_menu_background.jpg")));
 
         buttonPressedSound = audio.newSound(files.internal("sounds/button_pressed.mp3"));
 
-        join = new TextButton("JOIN", new Skin(files.internal("buttons/connectbuttonassets/connectbuttonskin.json")));
-        cancel = new TextButton("CANCEL",new Skin(files.internal("buttons/cancelbuttonassets/cancelbuttonskin.json")));
-        textFieldEnterToken = new TextField("TOKEN:",new Skin(files.internal("labels/enterlabel/enterlabelskin.json")));
-        textFieldTokenLabel = new Label("(TRIPLE CLICK TO PASTE)", new Skin(files.internal("labels/entertokenlabel/entertokenlabelskin.json")));
+        join = new TextButton("ЗАЙТИ", new Skin(files.internal("buttons/connectbuttonassets/connectbuttonskin.json")));
+        cancel = new TextButton("ОТМЕНА",new Skin(files.internal("buttons/cancelbuttonassets/cancelbuttonskin.json")));
+        textFieldEnterToken = new TextField("ТОКЕН:",new Skin(files.internal("labels/enterlabel/enterlabelskin.json")));
+        textFieldTokenLabel = new Label("(КЛИК х3 ПО СТРОКЕ ЧТО БЫ ВСТАВИТЬ)", new Skin(files.internal("labels/tokenlabel/tokenlabelskin.json")));
 
         initBackground();
         initCancelButton();
@@ -151,14 +149,13 @@ public class JoinRoom implements Screen {
             public void clicked (InputEvent event, float x, float y) {
                 //trying to create new client
                 try {
-                    String decodedToken = PreGameStartedUtils.decodeToken(textFieldEnterToken.getText());
+                    String token = textFieldEnterToken.getText();
 
-                    String host = PreGameStartedUtils.getHost(decodedToken);
-                    int port = PreGameStartedUtils.getPort(decodedToken);
+                    String host = PreGameStartedUtils.getHost(token);
+                    int port = PreGameStartedUtils.getPort(token);
 
                     entryPoint.client = new Socket(host, port);
                 } catch (IOException | StringIndexOutOfBoundsException | IllegalArgumentException e) {
-                    e.printStackTrace();
                     return;
                 }
                 entryPoint.deviceState = CLIENT;
@@ -187,6 +184,23 @@ public class JoinRoom implements Screen {
             }
         });
 
+        textFieldEnterToken.setTextFieldFilter((textField, c) -> {
+            String letter = String.valueOf(c);
+
+            if (letter.equals(".") || letter.equals(":")) {
+                return true;
+            }
+
+            try {
+                Integer.parseInt(letter);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        });
+
+        textFieldEnterToken.setMaxLength(21);
+
         if(input.isPeripheralAvailable(OnscreenKeyboard)) {
             textFieldEnterToken.setOnscreenKeyboard(visible ->
                     input.setOnscreenKeyboardVisible(true, Password));
@@ -202,7 +216,8 @@ public class JoinRoom implements Screen {
     private void initTokenInputLabel(){
         textFieldTokenLabel.setSize(WIDGET_PREFERRED_WIDTH + 100, WIDGET_PREFERRED_HEIGHT);
         textFieldTokenLabel.setPosition((float) WIDTH/2 - textFieldTokenLabel.getWidth()/2,
-                textFieldEnterToken.getY() + textFieldEnterToken.getHeight());
+                textFieldTokenLabel.getHeight() + 5);
+
         textFieldTokenLabel.setAlignment(center);
 
         textFieldTokenLabel.setFontScale(MathUtils.ceil(textFieldTokenLabel.getWidth()/ textFieldTokenLabel.getMinWidth()),

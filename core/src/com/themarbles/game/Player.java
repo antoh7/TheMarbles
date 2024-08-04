@@ -7,7 +7,7 @@ import com.themarbles.game.myImpls.SerializableImage;
 
 import java.io.Serializable;
 
-/** Represents basic game entity, containing marbles, hand texture, statement and bet.
+/** Represents basic game entity, contains marbles, hand textures, statement and bet.
  * @see SerializableImage
  */
 

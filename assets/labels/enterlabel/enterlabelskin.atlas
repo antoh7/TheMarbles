@@ -1,19 +1,19 @@
 
 enterlabelskin.png
-size: 1024, 1024
+size: 512, 512
 format: RGBA8888
 filter: Linear, Linear
 repeat: none
 font
   rotate: false
-  xy: 1, 4
-  size: 512, 512
-  orig: 512, 512
+  xy: 1, 411
+  size: 505, 48
+  orig: 505, 48
   offset: 0, 0
   index: -1
 white-pixel
   rotate: false
-  xy: 1, 1
+  xy: 508, 506
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
