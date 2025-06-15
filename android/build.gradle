@@ -1,5 +1,5 @@
 android {
-    namespace "com.themarbles.game"
+    namespace "ru.kbuearpov.themarbles"
     buildToolsVersion "33.0.2"
     compileSdkVersion 33
     sourceSets {
@@ -18,11 +18,11 @@ android {
         exclude 'META-INF/robovm/ios/robovm.xml'
     }
     defaultConfig {
-        applicationId "com.themarbles.game"
+        applicationId "ru.kbuearpov.themarbles"
         minSdkVersion 23 // >= android 6.0
         targetSdkVersion 33
         versionCode 2
-        versionName "2.1.5-production"
+        versionName "2.1.6"
     }
     buildTypes {
         release {
@@ -83,7 +83,7 @@ task run(type: Exec) {
     }
 
     def adb = path + "/platform-tools/adb"
-    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.themarbles.game/com.themarbles.game.AndroidLauncher'
+    commandLine "$adb", 'shell', 'am', 'start', '-n', 'ru.kbuearpov.themarbles/ru.kbuearpov.themarbles.AndroidLauncher'
 }
 
 eclipse.project.name = appName + "-android"
